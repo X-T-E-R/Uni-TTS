@@ -1,0 +1,6 @@
+i18n/
+pretrained_models/
+runtime/
+tools/
+trained/*
+!trained/character_info.json
