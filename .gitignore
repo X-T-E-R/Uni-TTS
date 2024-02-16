@@ -4,3 +4,4 @@ runtime/
 tools/
 trained/*
 !trained/character_info.json
+testaudio/
