@@ -13,10 +13,9 @@
 等待安装完成安装完成
 然后就是可以正常的使用，导入模型后看下方如何使用环节
 ### 独立安装：
-运行`full_install.sh`
+不推荐！！！
+这个东西更多请当成插件使用
 
-下载`i18n`/`pretrained_models`到根目录
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708084551373-7cab5f8e-7bfd-41e3-9f11-c2bee684b648.png#averageHue=%23fbfaf8&clientId=u858e88ce-4b18-4&from=paste&height=303&id=uf71ffedb&originHeight=605&originWidth=546&originalType=binary&ratio=2&rotation=0&showTitle=false&size=31148&status=done&style=none&taskId=ua11df5be-97fa-4f68-86a8-60cbc22274d&title=&width=273)
 ### 整合包：
 在弄，等一等
 ## 导入模型
@@ -80,17 +79,32 @@ http://192.168.0.106:5000/tts,
 它默认运行在5000端口，挂载点是例如`[http://192.168.0.106:5000/tts](http://192.168.0.106:5000/tts,)`
 
 #### 接受的数据
+最少项：
+```json
+{
+    "method": "POST",
+    "body": {
+       
+        "text": "{{java.encodeURI(speakText)}}"
+    }
+}
+```
+详细选项
 ```json
 {
     "method": "POST",
     "body": {
         "cha_name": "hutao",
-        "text": "{{java.encodeURI(speakText)}}"
+        "text": "{{java.encodeURI(speakText)}}",
+        "top_k": 3,
+        "top_p": 0.6,
+        "temperature": 0.6
     }
 }
 ```
 其中`text`是必要项
 `cha_name`可选，请确保在`trained`中存在对应模型，不指定则使用默认模型
+其它参数如果不知道怎么指定，可以不指定
 
 #### 返回的数据
 返回音频文件
