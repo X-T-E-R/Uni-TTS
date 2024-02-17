@@ -1,7 +1,10 @@
 import soundfile as sf
 from flask import Flask, request, Response, jsonify
 import io, os
-import urllib.parse
+import urllib.parse,sys
+
+# 将当前文件所在的目录添加到 sys.path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from character_manage import load_character, character_name, get_wav_from_text_api
 

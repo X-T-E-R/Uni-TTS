@@ -1,15 +1,20 @@
 ## 介绍
 这是一个后端项目
+
 基于[https://github.com/RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
-实现了一个Flask框架的简单后端
+实现了一个Flask框架的简单后端，并将推理函数拆分到不同文件利于管理
+
 可以实现快速切换人物
-并且增加了智能切分的特性
 
 ## 安装方式
 ### 推荐做法：
 对于一个已经能正常运行的GPT-soVITS项目
 
-将项目文件拷入根目录（或使用git之类的，只需要保证inference_backend.py出现在根目录）
+将项目文件拷入根目录
+
+或使用git，需要保证根目录下类似这样的文件结构
+
+![](./assets/image-20240217215343123.png)
 
 并且`pip install -r requirements_added.txt`
 
@@ -120,8 +125,9 @@ http://192.168.0.106:5000/tts,
 其中`text`是必要项
 
 `cha_name`可选，请确保在`trained`中存在对应模型，不指定则使用默认模型
+
 其它参数如果不知道怎么指定，可以不指定
 
 
 #### 返回的数据
-返回音频文件
+返回`audio/wav`

@@ -1,3 +1,3 @@
 @echo off
-.\runtime\python.exe .\inference_backend.py
+.\runtime\python.exe .\TTS-for-GPT-soVITS\tts_backend.py
 pause
