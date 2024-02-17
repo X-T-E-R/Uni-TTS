@@ -8,6 +8,7 @@ tts_webui.py
 ffmpeg.exe
 ffprobe.exe
 my_run_backend.bat
+__pycache__/
 !trained/character_info.json
 
 
