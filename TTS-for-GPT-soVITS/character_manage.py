@@ -51,7 +51,7 @@ def auto_get_infer_config(character_path):
 def load_character(character_name):
     try:
         # 加载配置
-        config = load_infer_config(f"./trained/{character_name}/infer_config.json")
+        config = load_infer_config(f"trained/{character_name}/infer_config.json")
         # 尝试从环境变量获取gpt_path，如果未设置，则从配置文件读取
         gpt_path = config.get("gpt_path")
         # 尝试从环境变量获取sovits_path，如果未设置，则从配置文件读取
@@ -59,7 +59,7 @@ def load_character(character_name):
     except:
         try:
             # 尝试调用auto_get_infer_config
-            auto_get_infer_config(f"./trained/{character_name}/")
+            auto_get_infer_config(f"trained/{character_name}/")
             load_character(character_name)
             return 
         except:
@@ -73,7 +73,7 @@ def get_deflaut_character_name():
     import os
     import json
 
-    character_info_path = "./trained/character_info.json"
+    character_info_path = "trained/character_info.json"
     default_character = None
 
     if os.path.exists(character_info_path):
@@ -82,11 +82,11 @@ def get_deflaut_character_name():
             default_character = character_info.get("deflaut_character")
 
     if default_character is None:
-        # List all items in "./trained"
-        all_items = os.listdir("./trained")
+        # List all items in "trained"
+        all_items = os.listdir("trained")
         
         # Filter out only directories (folders) from all_items
-        trained_folders = [item for item in all_items if os.path.isdir(os.path.join("./trained", item))]
+        trained_folders = [item for item in all_items if os.path.isdir(os.path.join("trained", item))]
         
         # If there are any directories found, set the first one as the default character
         if trained_folders:
@@ -104,7 +104,7 @@ load_character(character_name)
 def get_wav_from_text_api(text, top_k=20, top_p=0.6, temperature=0.6):
     
     # 加载环境配置
-    config = load_infer_config(f"./trained/{character_name}/infer_config.json")
+    config = load_infer_config(f"trained/{character_name}/infer_config.json")
     
     # 从配置中提取参数
     ref_wav_path = config['ref_wav_path']
@@ -121,11 +121,8 @@ def test_audio_save():
     fs, audio_to_save=get_wav_from_text_api("""大家好我是查特
 花儿不哭大佬开源了一个人工智能语音合成项目
 效果相当不错""")
-    file_path = "./testaudio/example_audio.wav"
+    file_path = "testaudio/example_audio.wav"
     from scipy.io.wavfile import write
     write(file_path, fs, audio_to_save)
-
-
-
 
 test_audio_save()
