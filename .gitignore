@@ -6,3 +6,5 @@ trained/*
 !trained/character_info.json
 testaudio/
 tts_webui.py
+ffmpeg.exe
+ffprobe.exe
