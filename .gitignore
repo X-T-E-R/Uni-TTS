@@ -10,5 +10,5 @@ ffprobe.exe
 my_run_backend.bat
 __pycache__/
 !trained/character_info.json
-
+*.pyc
 

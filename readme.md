@@ -7,6 +7,14 @@
 可以实现快速切换人物
 
 ## 安装方式
+
+对于安装
+
+我们可以看看
+[https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e](https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e)
+
+这个中文文档会更加详细
+
 ### 推荐做法：
 对于一个已经能正常运行的GPT-soVITS项目
 
