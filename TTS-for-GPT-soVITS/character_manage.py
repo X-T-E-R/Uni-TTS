@@ -144,11 +144,10 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
 
 
 def test_audio_save():
-    fs, audio_to_save=get_wav_from_text_api("""大家好我是查特
-花儿不哭大佬开源了一个人工智能语音合成项目
-效果相当不错""",'多语种混合')
+    fs, audio_to_save=get_wav_from_text_api("""这是一段音频测试""",'多语种混合')
     file_path = "testaudio/example_audio.wav"
     from scipy.io.wavfile import write
     write(file_path, fs, audio_to_save)
+
 
 test_audio_save()
