@@ -31,12 +31,12 @@ def tts():
         elif expected_path and not os.path.exists(expected_path):
             return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
 
+        text_language = data.get('text_language', '多语种混合')
         top_k = data.get('top_k', 3)
         top_p = data.get('top_p', 0.6)
         temperature = data.get('temperature', 0.6)
-        sample_rate, audio_data = get_wav_from_text_api(text, top_k=top_k, top_p=top_p, temperature=temperature)
-        
-        # 将音频数据转换为二进制流
+        sample_rate, audio_data = get_wav_from_text_api(text,text_language, top_k=top_k, top_p=top_p, temperature=temperature)
+                # 将音频数据转换为二进制流
         buffer = io.BytesIO()
         sf.write(buffer, audio_data, sample_rate, format='WAV')
         buffer.seek(0)
@@ -44,5 +44,5 @@ def tts():
     else:
         return jsonify({"error": "Request must be JSON"}), 400
 
-if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+# if __name__ == '__main__':
+#     app.run(debug=False, host='0.0.0.0')

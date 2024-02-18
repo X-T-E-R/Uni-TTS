@@ -230,6 +230,7 @@ def get_bert_final(phones, word2ph, text,language,device):
 
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
+
 def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, top_p=0.6, temperature=0.6, ref_free = False):
     if prompt_text is None or len(prompt_text) == 0:
         ref_free = True
@@ -248,30 +249,31 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         int(hps.data.sampling_rate * 0.3),
         dtype=np.float16 if is_half == True else np.float32,
     )
-    with torch.no_grad():
-        wav16k, sr = librosa.load(ref_wav_path, sr=16000)
-        if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):
-            raise OSError(i18n("参考音频在3~10秒范围外，请更换！"))
-        wav16k = torch.from_numpy(wav16k)
-        zero_wav_torch = torch.from_numpy(zero_wav)
-        if is_half == True:
-            wav16k = wav16k.half().to(device)
-            zero_wav_torch = zero_wav_torch.half().to(device)
-        else:
-            wav16k = wav16k.to(device)
-            zero_wav_torch = zero_wav_torch.to(device)
-        wav16k = torch.cat([wav16k, zero_wav_torch])
-        ssl_content = ssl_model.model(wav16k.unsqueeze(0))[
-            "last_hidden_state"
-        ].transpose(
-            1, 2
-        )  # .float()
-        codes = vq_model.extract_latent(ssl_content)
-   
-        prompt_semantic = codes[0, 0]
+    if not ref_free:
+        with torch.no_grad():
+            wav16k, sr = librosa.load(ref_wav_path, sr=16000)
+            if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):
+                raise OSError(i18n("参考音频在3~10秒范围外，请更换！"))
+            wav16k = torch.from_numpy(wav16k)
+            zero_wav_torch = torch.from_numpy(zero_wav)
+            if is_half == True:
+                wav16k = wav16k.half().to(device)
+                zero_wav_torch = zero_wav_torch.half().to(device)
+            else:
+                wav16k = wav16k.to(device)
+                zero_wav_torch = zero_wav_torch.to(device)
+            wav16k = torch.cat([wav16k, zero_wav_torch])
+            ssl_content = ssl_model.model(wav16k.unsqueeze(0))[
+                "last_hidden_state"
+            ].transpose(
+                1, 2
+            )  # .float()
+            codes = vq_model.extract_latent(ssl_content)
+    
+            prompt_semantic = codes[0, 0]
     t1 = ttime()
 
-    
+
     text = auto_cut(text)
     while "\n\n" in text:
         text = text.replace("\n\n", "\n")
@@ -300,7 +302,8 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
 
         bert = bert.to(device).unsqueeze(0)
         all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(device)
-        prompt = prompt_semantic.unsqueeze(0).to(device)
+        if not ref_free:
+            prompt = prompt_semantic.unsqueeze(0).to(device)
         t2 = ttime()
         with torch.no_grad():
             # pred_semantic = t2s_model.model.infer(
@@ -320,11 +323,14 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         pred_semantic = pred_semantic[:, -idx:].unsqueeze(
             0
         )  # .unsqueeze(0)#mq要多unsqueeze一次
-        refer = get_spepc(hps, ref_wav_path)  # .to(device)
-        if is_half == True:
-            refer = refer.half().to(device)
+        if not ref_free:
+            refer = get_spepc(hps, ref_wav_path)  # .to(device)
+            if is_half == True:
+                refer = refer.half().to(device)
+            else:
+                refer = refer.to(device)
         else:
-            refer = refer.to(device)
+            refer = None
         # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
         audio = (
             vq_model.decode(
