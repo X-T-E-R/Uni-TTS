@@ -8,7 +8,8 @@
 可以实现快速切换人物
 ## 有关于更新
 2024.2.26进行了大更新，请重新覆盖安装
-
+并且，十分建议查看这个中文文档
+[https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e](https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e)
 
 ## 安装方式
 
