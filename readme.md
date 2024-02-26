@@ -2,9 +2,13 @@
 这是一个后端项目
 
 基于[https://github.com/RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
-实现了一个Flask框架的简单后端，并将推理函数拆分到不同文件利于管理
+
+对推理进行了特化，前后端分离，支持快速切换人物、模型管理等功能
 
 可以实现快速切换人物
+## 有关于更新
+2024.2.26进行了大更新，请重新覆盖安装
+
 
 ## 安装方式
 
@@ -24,9 +28,13 @@
 
 ```ini
 ----main_project
---------GPT_SoVITS
---------GPT_weights
---------SoVITS_weights
+--------GPT_SoVITS（原始项目文件）
+------------s1_train.py
+------------s2_train.py
+------------...
+--------trianed
+------------character_model_folders
+------------character_info.json
 --------TTS-for-GPT-soVITS
 ------------src
 ----------------tts_backend.py
@@ -50,9 +58,8 @@
 ## 导入模型
 ！注意，这个不同于主项目，而是将模型以人物卡的形式导入
 
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708088539798-b085f845-4eb1-4c87-ac22-38fb6d580823.png#averageHue=%23fcfcfb&clientId=ue190b2a0-f82e-4&from=paste&height=294&id=u78fec597&originHeight=587&originWidth=1566&originalType=binary&ratio=2&rotation=0&showTitle=false&size=96134&status=done&style=none&taskId=ue955b54a-4961-4d7e-a515-90998d230cd&title=&width=783)
+在主项目的trained文件夹，通过子文件夹的形式导入人物
 
-在trained文件夹，通过子文件夹的形式导入人物
 ### 文件夹要求
 文件夹名称就是人物名称
 
@@ -62,24 +69,6 @@
 
 以`pth`/`ckpt`/`wav`后缀名结尾
 
-并且wav的文件名就是它包含的文字内容
-
-这样软件就会自动在这个文件夹中生成一个`infer_config.json`
-
-```json
-{
-  "ref_wav_path": "./trained/paimeng/既然罗莎莉亚说足迹上有元素力，用元素视野应该能很清楚地看到吧。.wav",
-  "prompt_text": "既然罗莎莉亚说足迹上有元素力，用元素视野应该能很清楚地看到吧。",
-  "prompt_language": "中文",
-  "text_language": "中文",
-  "gpt_path": "./trained/paimeng/paimeng2-e50.ckpt",
-  "sovits_path": "./trained/paimeng/paimeng_e75_s81900.pth"
-}
-
-```
-也可以手动编辑来指定路径
-
-如果因为调整其中文件导致出现问题，请手动删去`infer_config.json`，软件会重新生成
 ### *如何指定默认角色
 在`trained`文件夹下有一个`character_info.json`
 通过修改它可以改变默认角色
@@ -88,9 +77,17 @@
 "deflaut_character":"hutao"
 }
 ```
+### 如何管理模型
+
+我写了一个模型管理界面`Character_Manager.py`，可以通过bat启动
+
+在里面可以方便的管理模型，添加情绪等
+
 ## 如何使用
-用`.\runtime\python.exe .\inference_backend.py`调用或者直接双击bat即可
+
+直接双击bat即可
 ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708089147914-5b703fac-770e-47d5-b928-47389da6d7b3.png#averageHue=%231e1d1c&clientId=ue190b2a0-f82e-4&from=paste&height=207&id=axeUa&originHeight=413&originWidth=859&originalType=binary&ratio=2&rotation=0&showTitle=false&size=46567&status=done&style=none&taskId=ub1efa501-62d6-4b60-889a-fdacb64f703&title=&width=429.5)
+
 ### 阅读3.0配置使用例
 比如用阅读3.0
 
