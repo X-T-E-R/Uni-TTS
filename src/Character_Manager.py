@@ -219,7 +219,7 @@ with gr.Blocks() as app:
     
     with gr.Row() as status_bar:       
         # 创建模型文件夹路径的输入框
-        models_path = gr.Textbox(value=r"trained", label="模型文件夹路径",scale=3)
+        models_path = gr.Textbox(value=state["models_path"], label="模型文件夹路径",scale=3)
 
         
         # 创建扫描按钮并设置点击事件
