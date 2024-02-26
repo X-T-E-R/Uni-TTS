@@ -20,17 +20,27 @@
 
 将项目文件拷入根目录
 
-或使用git，需要保证根目录下类似这样的文件结构
+我们希望的层级结构是
 
-![](./assets/image-20240217215343123.png)
+```ini
+----main_project
+--------GPT_SoVITS
+--------GPT_weights
+--------SoVITS_weights
+--------TTS-for-GPT-soVITS
+------------src
+----------------tts_backend.py
+----------------TTS_Webui.py
+----------------...
+------------readme.md
+------------requirements.txt
+------------bat_files
+```
 
-并且`pip install -r requirements_added.txt`
-
-等待安装完成安装完成
-
-然后就是可以正常的使用，导入模型后看下方如何使用环节
+然后依次运行这些bat文件即可
 
 ### 独立安装：
+
 不推荐！！！
 
 这个东西更多请当成插件使用
