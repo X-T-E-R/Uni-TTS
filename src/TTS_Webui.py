@@ -6,16 +6,26 @@ import numpy as np
 from string import Template
 
 
-character_path = "trained"
+# 取得模型文件夹路径
+global models_path
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        models_path = config.get("models_path", "trained")
+else:
+    models_path = "trained"
+
 
 def get_character_names():
-    trained_folders = [f for f in os.listdir(character_path) if os.path.isdir(os.path.join(character_path, f))]
+    trained_folders = [f for f in os.listdir(models_path) if os.path.isdir(os.path.join(models_path, f))]
     return trained_folders
 
 def load_info_config(character_name):
     emotion_options = ["default"]
     try:
-        with open(f"{character_path}/{character_name}/infer_config.json", "r", encoding="utf-8") as f:
+        with open(f"{models_path}/{character_name}/infer_config.json", "r", encoding="utf-8") as f:
             config = json.load(f)
         emotion_list=config.get('emotion_list', None)
         if emotion_list is not None:

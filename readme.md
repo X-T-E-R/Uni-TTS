@@ -33,7 +33,7 @@
 ------------s1_train.py
 ------------s2_train.py
 ------------...
---------trianed
+--------trianed（可自定义，在TTS-for-GPT-soVITS的config.json中定义） 
 ------------character_model_folders
 ------------character_info.json
 --------TTS-for-GPT-soVITS
@@ -43,6 +43,7 @@
 ----------------...
 ------------readme.md
 ------------requirements.txt
+------------config.json
 ------------bat_files
 ```
 

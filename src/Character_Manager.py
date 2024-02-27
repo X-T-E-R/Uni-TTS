@@ -20,6 +20,15 @@ global infer_config
 infer_config = {
 }
 
+# 取得模型文件夹路径
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        state["models_path"] = config.get("models_path", "trained")
+
+
 #微软提供的SSML情感表
 emotional_styles = [
     "default",

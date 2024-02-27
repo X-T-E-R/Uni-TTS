@@ -16,6 +16,16 @@ def load_infer_config(character_path):
 import os
 import json
 
+# 取得模型文件夹路径
+global models_path
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        models_path = config.get("models_path", "trained")
+else:
+    models_path = "trained"
 
 def remove_character_path(full_path,character_path):
     # 从full_path中移除character_path部分
@@ -94,7 +104,7 @@ def auto_get_infer_config(character_path):
             }
         }
     else:
-        raise Exception("找不到wav参考文件！请把有效wav文件放置在trained文件夹下。否则效果可能会非常怪")
+        raise Exception("找不到wav参考文件！请把有效wav文件放置在模型文件夹下。否则效果可能会非常怪")
         pass
     # Check if the essential model files were found
     if ckpt_file_found and pth_file_found:
@@ -111,23 +121,24 @@ def auto_get_infer_config(character_path):
 
 
 def load_character(character_name):
+    character_path=os.path.join(models_path,character_name)
     try:
         # 加载配置
-        config = load_infer_config(f"trained/{character_name}")
+        config = load_infer_config(character_path)
         
         # 尝试从环境变量获取gpt_path，如果未设置，则从配置文件读取
-        gpt_path = os.path.join(f"trained/{character_name}/",config.get("gpt_path"))
+        gpt_path = os.path.join(character_path,config.get("gpt_path"))
         # 尝试从环境变量获取sovits_path，如果未设置，则从配置文件读取
-        sovits_path = os.path.join(f"trained/{character_name}/",config.get("sovits_path"))
+        sovits_path = os.path.join(character_path,config.get("sovits_path"))
     except:
         try:
             # 尝试调用auto_get_infer_config
-            auto_get_infer_config(f"trained/{character_name}/")
+            auto_get_infer_config(character_path)
             load_character(character_name)
             return 
         except:
             # 报错
-            raise Exception("找不到模型文件！请把有效模型放置在trained文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
+            raise Exception("找不到模型文件！请把有效模型放置在模型文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
     # 修改权重
     change_sovits_weights(sovits_path)
     change_gpt_weights(gpt_path)
@@ -136,7 +147,7 @@ def get_deflaut_character_name():
     import os
     import json
 
-    character_info_path = "trained/character_info.json"
+    character_info_path = os.path.join(models_path, "character_info.json")
     default_character = None
 
     if os.path.exists(character_info_path):
@@ -144,12 +155,12 @@ def get_deflaut_character_name():
             character_info = json.load(f)
             default_character = character_info.get("deflaut_character")
 
-    if default_character is None:
-        # List all items in "trained"
-        all_items = os.listdir("trained")
+    if default_character is None or not os.path.exists(os.path.join(models_path, default_character)):
+        # List all items in models_path
+        all_items = os.listdir(models_path)
         
         # Filter out only directories (folders) from all_items
-        trained_folders = [item for item in all_items if os.path.isdir(os.path.join("trained", item))]
+        trained_folders = [item for item in all_items if os.path.isdir(os.path.join(models_path, item))]
         
         # If there are any directories found, set the first one as the default character
         if trained_folders:
@@ -165,7 +176,7 @@ load_character(character_name)
 
 def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default"):
     # 加载环境配置
-    config = load_infer_config(f"trained/{character_name}")
+    config = load_infer_config(os.path.join(models_path, character_name))
     
    
     
@@ -183,7 +194,7 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
             break
     for emotion, details in emotion_list.items():
         if emotion==now_emotion:
-            ref_wav_path = os.path.join(f"trained/{character_name}/", details['ref_wav_path'])
+            ref_wav_path = os.path.join(os.path.join(models_path,character_name), details['ref_wav_path'])
             prompt_text = details['prompt_text']
             prompt_language = details['prompt_language']
             break
