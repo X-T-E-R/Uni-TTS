@@ -101,7 +101,9 @@ def auto_generate_infer_config(character_path):
     # Initialize infer_config with gpt_path and sovits_path regardless of wav_file_found
     infer_config = {
         "gpt_path": ckpt_file_found,
-        "sovits_path": pth_file_found
+        "sovits_path": pth_file_found,
+        "software_version": "1.1",
+        r"简介": r"这是一个配置文件适用于https://github.com/X-T-E-R/TTS-for-GPT-soVITS，是一个简单好用的前后端项目"
     }
 
     # If wav file is also found, update infer_config to include ref_wav_path, prompt_text, and prompt_language

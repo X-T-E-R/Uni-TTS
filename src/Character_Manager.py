@@ -131,6 +131,7 @@ def save_json():
         'version': infer_config['version'],
         'gpt_path': infer_config['gpt_path'],
         'sovits_path': infer_config['sovits_path'],
+         r"简介": r"这是一个配置文件适用于https://github.com/X-T-E-R/TTS-for-GPT-soVITS，是一个简单好用的前后端项目",
         'emotion_list': {}
     }
     for item in infer_config['emotion_list']:
