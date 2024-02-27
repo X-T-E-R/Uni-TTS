@@ -6,14 +6,17 @@ import urllib.parse,sys
 # 将当前文件所在的目录添加到 sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from load_infer_info import load_character, character_name, get_wav_from_text_api
+from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path
 
 app = Flask(__name__)
+
+
 
 
 @app.route('/tts', methods=['POST'])
 def tts():
     global character_name
+    global models_path
     if request.is_json:
         # 使用 request.json 来访问 JSON 数据
         data = request.json
@@ -22,11 +25,12 @@ def tts():
         cha_name = data.get('cha_name', None)
 
         # 构建期望的目录路径
-        expected_path = f"./trained/{cha_name}/" if cha_name else None
+        expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
         # 检查是否提供了cha_name，且与当前全局变量不同，以及路径是否存在
         if cha_name and cha_name != character_name and expected_path and os.path.exists(expected_path):
             character_name = cha_name  # 更新全局变量
+            print(f"Loading character {character_name}")
             load_character(character_name)  # 加载新角色
         elif expected_path and not os.path.exists(expected_path):
             return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400

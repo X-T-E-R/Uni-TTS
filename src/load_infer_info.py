@@ -18,14 +18,13 @@ import json
 
 # 取得模型文件夹路径
 global models_path
+models_path = "trained"
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
 if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
         models_path = config.get("models_path", "trained")
-else:
-    models_path = "trained"
 
 def remove_character_path(full_path,character_path):
     # 从full_path中移除character_path部分
@@ -64,10 +63,12 @@ def update_config_version(character_path):
         raise Exception("更新失败！请手动删除infer_config.json文件，让系统自动生成")
              
 
-def auto_get_infer_config(character_path):
+def auto_generate_infer_config(character_path):
     ## TODO: Auto-generate wav-list and prompt-list from character_path
     ##     
     # Initialize variables for file detection
+
+    print(f"正在自动生成配置文件: {character_path}")
     ckpt_file_found = None
     pth_file_found = None
     wav_file_found = None
@@ -86,6 +87,16 @@ def auto_get_infer_config(character_path):
                 pth_file_found = relative_path
             elif file.endswith(".wav") and wav_file_found is None:
                 wav_file_found = relative_path
+            elif file.endswith(".mp3"):
+                import pydub
+                # Convert mp3 to wav
+                wav_file_path = os.path.join(dirpath,os.path.splitext(file)[0] + ".wav")
+
+
+                pydub.AudioSegment.from_mp3(full_path).export(wav_file_path, format="wav")
+                if wav_file_found is None:
+                    wav_file_found = remove_character_path(os.path.join(dirpath,os.path.splitext(file)[0] + ".wav"),character_path)
+                    
 
     # Initialize infer_config with gpt_path and sovits_path regardless of wav_file_found
     infer_config = {
@@ -120,8 +131,10 @@ def auto_get_infer_config(character_path):
         return "Required model files (.ckpt or .pth) not found in character_path directory."
 
 
-def load_character(character_name):
-    character_path=os.path.join(models_path,character_name)
+def load_character(cha_name):
+    global character_name
+    character_name = cha_name
+    character_path=os.path.join(models_path,cha_name)
     try:
         # 加载配置
         config = load_infer_config(character_path)
@@ -133,8 +146,8 @@ def load_character(character_name):
     except:
         try:
             # 尝试调用auto_get_infer_config
-            auto_get_infer_config(character_path)
-            load_character(character_name)
+            auto_generate_infer_config(character_path)
+            load_character(cha_name)
             return 
         except:
             # 报错
@@ -142,6 +155,7 @@ def load_character(character_name):
     # 修改权重
     change_sovits_weights(sovits_path)
     change_gpt_weights(gpt_path)
+    print(f"加载角色成功: {cha_name}")
 
 def get_deflaut_character_name():
     import os
@@ -152,8 +166,11 @@ def get_deflaut_character_name():
 
     if os.path.exists(character_info_path):
         with open(character_info_path, "r", encoding='utf-8') as f:
-            character_info = json.load(f)
-            default_character = character_info.get("deflaut_character")
+            try:
+                character_info = json.load(f)
+                default_character = character_info.get("deflaut_character")
+            except:
+                pass
 
     if default_character is None or not os.path.exists(os.path.join(models_path, default_character)):
         # List all items in models_path
@@ -185,7 +202,7 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
     prompt_text = None
     prompt_language = None
     # 这是新版的infer_config.json文件，如果出现错误请删除infer_config.json文件，让系统自动生成
-    emotion_list=config.get('emotion_list', None)# 这是新版的infer_config文件，如果出现错误请删除infer_config.json文件，让系统自动生成
+    emotion_list=config.get('emotion_list', None)# 这是新版的infer_config文件，如果出现错误请删除infer_config.json文件，让系统自动生成 
     now_emotion="default"
     for emotion, details in emotion_list.items():
         print(emotion)
@@ -201,7 +218,7 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
     if ref_wav_path is None:
         print("找不到ref_wav_path！请删除infer_config.json文件，让系统自动生成")
             
-
+    print(prompt_text)
     
     # 根据是否找到ref_wav_path和prompt_text、prompt_language来决定ref_free的值
     if ref_wav_path is not None and prompt_text is not None and prompt_language is not None:
