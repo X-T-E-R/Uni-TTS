@@ -133,7 +133,7 @@ def auto_generate_infer_config(character_path):
 
 def load_character(cha_name):
     global character_name
-    character_name = cha_name
+    
     character_path=os.path.join(models_path,cha_name)
     try:
         # 加载配置
@@ -153,6 +153,7 @@ def load_character(cha_name):
             # 报错
             raise Exception("找不到模型文件！请把有效模型放置在模型文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
     # 修改权重
+    character_name = cha_name
     change_sovits_weights(sovits_path)
     change_gpt_weights(gpt_path)
     print(f"加载角色成功: {cha_name}")
