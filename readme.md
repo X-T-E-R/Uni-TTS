@@ -11,6 +11,8 @@
 并且，十分建议查看这个中文文档
 [https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e](https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e)
 
+
+
 ## 安装方式
 
 对于安装
@@ -20,43 +22,8 @@
 
 这个中文文档会更加详细
 
-### 推荐做法：
-对于一个已经能正常运行的GPT-soVITS项目
+现在会更推荐直接以整合包的形式安装
 
-将项目文件拷入根目录
-
-我们希望的层级结构是
-
-```ini
-----main_project
---------GPT_SoVITS（原始项目文件）
-------------s1_train.py
-------------s2_train.py
-------------...
---------trianed（可自定义，在TTS-for-GPT-soVITS的config.json中定义） 
-------------character_model_folders
-------------character_info.json
---------TTS-for-GPT-soVITS
-------------src
-----------------tts_backend.py
-----------------TTS_Webui.py
-----------------...
-------------readme.md
-------------requirements.txt
-------------config.json
-------------bat_files
-```
-
-然后依次运行这些bat文件即可
-
-### 独立安装：
-
-不推荐！！！
-
-这个东西更多请当成插件使用
-
-### 整合包：
-在弄，等一等
 ## 导入模型
 ！注意，这个不同于主项目，而是将模型以人物卡的形式导入
 
