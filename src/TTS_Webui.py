@@ -74,7 +74,7 @@ def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, 
         print(f"请求失败，状态码：{response.status_code}")
 
 
-default_endpoint = "http://0.0.0.0:5000/tts"
+default_endpoint = "http://127.0.0.1:5000/tts"
 default_endpoint_data = """{
     "method": "POST",
     "body": {
