@@ -62,6 +62,9 @@
 
 [https://github.com/gedoor/legado](https://github.com/gedoor/legado)
 
+请直接看语雀文档：https://www.yuque.com/xter/zibxlp/uocryi6ryatwocu3
+
+
 ![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708089393043-b3665805-a77b-49c5-9207-04c52b92ccbd.png#averageHue=%23272626&clientId=ue190b2a0-f82e-4&from=paste&height=278&id=u9921c858&originHeight=555&originWidth=558&originalType=binary&ratio=2&rotation=0&showTitle=false&size=66151&status=done&style=none&taskId=ue357c9d2-b7d6-4368-8ea2-a328262f646&title=&width=279)
 
 在朗读引擎中加入对应人名的朗读引擎
