@@ -74,6 +74,19 @@ def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, 
         print(f"请求失败，状态码：{response.status_code}")
 
 
+def change_model_folder(model_folder):
+    global models_path
+    character_names=[]
+    try:
+        models_path = model_folder
+        character_names = get_character_names()
+        return gr.Dropdown(character_names,value=character_names[0]), gr.Dropdown(["default"], value="default")
+
+    except:
+        return gr.Dropdown([],value="", label="选择角色"), gr.Dropdown(["default"], value="default")
+        
+
+
 default_endpoint = "http://127.0.0.1:5000/tts"
 default_endpoint_data = """{
     "method": "POST",
@@ -95,11 +108,13 @@ with gr.Blocks() as app:
         text = gr.Textbox(value=default_text, label="输入文本",interactive=True,lines=8)
     with gr.Row():
         with gr.Column(scale=2):
+            model_folder = gr.Textbox(value=models_path, label="模型文件夹路径（注意不和后端同步，请确保后端支持）")
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","中日混合"], value="多语种混合", label="文本语言")
             character_names=get_character_names()
             cha_name = gr.Dropdown(character_names,value=character_names[0], label="选择角色")
             character_emotion = gr.Dropdown(["default"], value="default", label="情感列表",interactive=True)  
-            cha_name.input(load_info_config, inputs=[cha_name],outputs=[character_emotion])
+            cha_name.change(load_info_config, inputs=[cha_name],outputs=[character_emotion])
+            model_folder.input(change_model_folder, inputs=[model_folder],outputs=[cha_name, character_emotion])
         with gr.Column(scale=1):    
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")

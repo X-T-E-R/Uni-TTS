@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0, "GPT_SoVITS")
 from text import cleaned_text_to_sequence
 from text.cleaner import clean_text
 import LangSegment
@@ -8,12 +6,53 @@ import re
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
 def clean_text_inf(text, language):
-    phones, word2ph, norm_text = clean_text(text, language)
+    formattext = ""
+    language = language.replace("all_","")
+    for tmp in LangSegment.getTexts(text):
+        if tmp["lang"] == language:
+            formattext += tmp["text"] + " "
+    while "  " in formattext:
+        formattext = formattext.replace("  ", " ")
+    phones, word2ph, norm_text = clean_text(formattext, language)
     phones = cleaned_text_to_sequence(phones)
+    return phones, word2ph, norm_text
+
+def nonen_clean_text_inf(text, language):
+    if(language!="auto"):
+        textlist, langlist = splite_en_inf(text, language)
+    else:
+        textlist=[]
+        langlist=[]
+        for tmp in LangSegment.getTexts(text):
+            langlist.append(tmp["lang"])
+            textlist.append(tmp["text"])
+    print(textlist)
+    print(langlist)
+    phones_list = []
+    word2ph_list = []
+    norm_text_list = []
+    for i in range(len(textlist)):
+        lang = langlist[i]
+        phones, word2ph, norm_text = clean_text_inf(textlist[i], lang)
+        phones_list.append(phones)
+        if lang == "zh":
+            word2ph_list.append(word2ph)
+        norm_text_list.append(norm_text)
+    print(word2ph_list)
+    phones = sum(phones_list, [])
+    word2ph = sum(word2ph_list, [])
+    norm_text = ' '.join(norm_text_list)
+
     return phones, word2ph, norm_text
 
 
 
+def get_cleaned_text_final(text,language):
+    if language in {"en","all_zh","all_ja"}:
+        phones, word2ph, norm_text = clean_text_inf(text, language)
+    elif language in {"zh", "ja","auto"}:
+        phones, word2ph, norm_text = nonen_clean_text_inf(text, language)
+    return phones, word2ph, norm_text
 
 
 def get_first(text):
