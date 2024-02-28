@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, "GPT_SoVITS")
 from text import cleaned_text_to_sequence
 from text.cleaner import clean_text
 import LangSegment
