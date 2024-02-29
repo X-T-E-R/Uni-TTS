@@ -125,7 +125,7 @@ def change_gpt_weights(gpt_path):
     t2s_model.eval()
     total = sum([param.nelement() for param in t2s_model.parameters()])
     print("Number of parameter: %.2fM" % (total / 1e6))
-    with open("./gweight.txt", "w", encoding="utf-8") as f: f.write(gpt_path)
+    
 
 
 def change_sovits_weights(sovits_path):
@@ -148,8 +148,6 @@ def change_sovits_weights(sovits_path):
         vq_model = vq_model.to(device)
     vq_model.eval()
     print(vq_model.load_state_dict(dict_s2["weight"], strict=False))
-    with open("./sweight.txt", "w", encoding="utf-8") as f:
-        f.write(sovits_path)
 
 
 
@@ -364,5 +362,5 @@ def get_phones_and_bert(text,language):
         bert = torch.cat(bert_list, dim=1)
         phones = sum(phones_list, [])
         norm_text = ''.join(norm_text_list)
-
+    
     return phones,bert.to(dtype),norm_text

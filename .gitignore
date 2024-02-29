@@ -1,3 +1,6 @@
 PortableGit/
 *.pyc
 trained/
+.vscode/launch.json
+src/try_phones.py
+text/

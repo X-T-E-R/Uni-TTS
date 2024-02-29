@@ -51,8 +51,8 @@ def generate_info_bar():
     
     current_character_textbox = gr.Textbox(value=state['edited_character_name'], label="当前人物", interactive=False)
     version_textbox = gr.Textbox(value=infer_config['version'], label="版本",interactive=True)
-    gpt_model_dropdown = gr.Dropdown(choices=state['ckpt_file_found'], label="GPT模型路径", interactive=True, value=infer_config['gpt_path'])
-    sovits_model_dropdown = gr.Dropdown(choices=state['pth_file_found'], label="Sovits模型路径", interactive=True, value=infer_config['sovits_path'])
+    gpt_model_dropdown = gr.Dropdown(choices=state['ckpt_file_found'], label="GPT模型路径", interactive=True, value=infer_config['gpt_path'],allow_custom_value=True)
+    sovits_model_dropdown = gr.Dropdown(choices=state['pth_file_found'], label="Sovits模型路径", interactive=True, value=infer_config['sovits_path'],allow_custom_value=True)
     column_items = [current_character_textbox, version_textbox, gpt_model_dropdown, sovits_model_dropdown]
     index=0
     for item in infer_config['emotion_list']:
@@ -60,8 +60,8 @@ def generate_info_bar():
         index+=1
         column_items.append(gr.Number(index,visible=True, scale=1))
         column_items.append(gr.Dropdown(choices=prompt_language_list,value=details['prompt_language']  , visible=True,interactive=True, scale=3))
-        column_items.append(gr.Dropdown(choices=emotional_styles,value=emotion,visible=True,interactive=True, scale=3))
-        column_items.append(gr.Dropdown(choices=state["wav_file_found"],visible=True, value=details['ref_wav_path'], scale=8))
+        column_items.append(gr.Dropdown(choices=emotional_styles,value=emotion,visible=True,interactive=True, scale=3,allow_custom_value=True))
+        column_items.append(gr.Dropdown(choices=state["wav_file_found"],visible=True, value=details['ref_wav_path'], scale=8,allow_custom_value=True))
         column_items.append(gr.Textbox(value=details['prompt_text'],visible=True, scale=8, interactive=True))
         column_items.append(gr.Audio(os.path.join(state["edited_character_path"],details['ref_wav_path']),visible=True, scale=8))
 
@@ -112,6 +112,7 @@ def read_json_from_file(chracter_dropdown,models_path  ):
     state['edited_character_name'] = chracter_dropdown  
     state['models_path']=models_path 
     state['edited_character_path'] = os.path.join(state['models_path'], state['edited_character_name'])
+    state['ckpt_file_found'], state['pth_file_found'], state['wav_file_found'] = scan_files(state['edited_character_path'])
     print(f"当前人物变更为: {state['edited_character_name']}")
     clear_infer_config()
     json_path = os.path.join(state['edited_character_path'], "infer_config.json")
@@ -147,14 +148,7 @@ def save_json():
         raise Exception("保存失败！")
     
 
-def auto_genertate_json(chracter_dropdown,models_path  ):
-    #将选中人物设定为当前人物
-    state['edited_character_name'] = chracter_dropdown  
-    state['models_path']=models_path 
-    state['edited_character_path'] = os.path.join(state['models_path'], state['edited_character_name'])
-    print(f"当前人物变更为: {state['edited_character_name']}")
-    clear_infer_config()
-    character_path = state['edited_character_path']
+def scan_files(character_path):
     ckpt_file_found = []
     pth_file_found = []
     wav_file_found = []
@@ -173,7 +167,18 @@ def auto_genertate_json(chracter_dropdown,models_path  ):
                 pth_file_found.append(rev_path)
             elif file.endswith(".wav"):
                 wav_file_found.append(rev_path)
+    return ckpt_file_found, pth_file_found, wav_file_found
 
+def auto_genertate_json(chracter_dropdown,models_path  ):
+    #将选中人物设定为当前人物
+    state['edited_character_name'] = chracter_dropdown  
+    state['models_path']=models_path 
+    state['edited_character_path'] = os.path.join(state['models_path'], state['edited_character_name'])
+    print(f"当前人物变更为: {state['edited_character_name']}")
+    clear_infer_config()
+    character_path = state['edited_character_path']
+    
+    ckpt_file_found, pth_file_found, wav_file_found = scan_files(character_path)
    
     if len(ckpt_file_found) == 0 or len(pth_file_found) == 0:
         gr.Error("找不到模型文件！请把有效文件放置在文件夹下！！！")
