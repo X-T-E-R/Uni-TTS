@@ -39,9 +39,13 @@ def tts():
         return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
 
     text_language = data.get('text_language', '多语种混合')
-    top_k = data.get('top_k', 6)
-    top_p = data.get('top_p', 0.8)
-    temperature = data.get('temperature', 0.8)
+     # 强制转换为适当的类型
+    try:
+        top_k = int(data.get('top_k', 6))
+        top_p = float(data.get('top_p', 0.8))
+        temperature = float(data.get('temperature', 0.8))
+    except ValueError:
+        return jsonify({"error": "Invalid parameters for top_k, top_p, or temperature. They must be numbers."}), 400
     character_emotion = data.get('character_emotion', 'default')
     sample_rate, audio_data = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion)
     # 将音频数据转换为二进制流
