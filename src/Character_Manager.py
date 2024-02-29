@@ -229,6 +229,27 @@ def add_emotion():
     return generate_info_bar()
 
 
+def change_pt_files(version_textbox, sovits_model_dropdown, gpt_model_dropdown):
+    infer_config['version'] = version_textbox
+    infer_config['sovits_path'] = sovits_model_dropdown
+    infer_config['gpt_path'] = gpt_model_dropdown
+    pass
+   
+def change_parameters(index, wav_path, emotion_list, prompt_language, prompt_text = ""):
+    
+    # Convert index to integer in case it's passed as a string
+    index = int(index)
+    
+    if prompt_text=="" or prompt_text is None:
+        prompt_text = split_file_name(wav_path)
+    
+    infer_config['emotion_list'][index-1][0]=emotion_list
+    infer_config['emotion_list'][index-1][1]['ref_wav_path'] = wav_path
+    infer_config['emotion_list'][index-1][1]['prompt_text'] = prompt_text
+    infer_config['emotion_list'][index-1][1]['prompt_language'] = prompt_language
+
+    return gr.Dropdown(value=wav_path), gr.Dropdown(value=emotion_list), gr.Dropdown(value=prompt_language), gr.Textbox(value=prompt_text), gr.Audio(os.path.join(state["edited_character_path"],wav_path))
+
 with gr.Blocks() as app:
    
     
@@ -241,34 +262,15 @@ with gr.Blocks() as app:
         scan_button = gr.Button("扫描",scale=1, variant="primary")
         # 创建角色列表的下拉菜单，初始为空
         chracter_dropdown = gr.Dropdown([], label="选择角色",scale=3)
-
         # 创建从json中读取按钮并设置点击事件
         read_info_from_json_button = gr.Button("从json中读取",size="lg",scale=2, variant="secondary")
-        
-
         # 创建自动生成json的按钮并设置点击事件
         auto_generate_info_button = gr.Button("自动生成info",size="lg",scale=2, variant="primary")
-        
-
     # gr.HTML("<hr>")  # 添加一条水平分割线
         scan_button.click(scan_subfolder, inputs=[models_path],outputs=[chracter_dropdown])
     gr.Markdown(f"请修改后点击最下方按钮进行保存")
 
    
-    def change_parameters(index, wav_path, emotion_list, prompt_language, prompt_text = ""):
-        
-        # Convert index to integer in case it's passed as a string
-        index = int(index)
-        
-        if prompt_text=="" or prompt_text is None:
-            prompt_text = split_file_name(wav_path)
-        
-        infer_config['emotion_list'][index-1][0]=emotion_list
-        infer_config['emotion_list'][index-1][1]['ref_wav_path'] = wav_path
-        infer_config['emotion_list'][index-1][1]['prompt_text'] = prompt_text
-        infer_config['emotion_list'][index-1][1]['prompt_language'] = prompt_language
-
-        return gr.Dropdown(value=wav_path), gr.Dropdown(value=emotion_list), gr.Dropdown(value=prompt_language), gr.Textbox(value=prompt_text), gr.Audio(os.path.join(state["edited_character_path"],wav_path))
 
     # 创建保存json的按钮并设置点击事件
     with gr.Row() as submit_bar:
@@ -281,6 +283,9 @@ with gr.Blocks() as app:
             version_textbox = gr.Textbox(value=infer_config['version'], label="版本")
             gpt_model_dropdown = gr.Dropdown(choices=state['ckpt_file_found'], label="GPT模型路径")
             sovits_model_dropdown = gr.Dropdown(choices=state['pth_file_found'], label="Sovits模型路径")
+            # version_textbox.change(change_pt_files, inputs=[version_textbox, sovits_model_dropdown, gpt_model_dropdown], outputs=None)
+            gpt_model_dropdown.input(change_pt_files, inputs=[version_textbox, sovits_model_dropdown, gpt_model_dropdown], outputs=None)
+            sovits_model_dropdown.input(change_pt_files, inputs=[version_textbox, sovits_model_dropdown, gpt_model_dropdown], outputs=None)
             column_items=[current_character_textbox, version_textbox, gpt_model_dropdown, sovits_model_dropdown]
         with gr.Column(scale=3) :
             add_emotion_button = gr.Button("添加情感",size="lg",scale=2, variant="primary")
