@@ -6,12 +6,14 @@ import urllib.parse,sys
 # 将当前文件所在的目录添加到 sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path
+from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 
 app = Flask(__name__)
 
 
-
+@app.route('/character_list', methods=['GET'])
+def character_list():
+    return jsonify(update_character_info()['characters_and_emotions'])
 
 @app.route('/tts', methods=['GET', 'POST'])
 def tts():

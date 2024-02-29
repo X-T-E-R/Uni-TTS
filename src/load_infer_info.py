@@ -238,6 +238,31 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
     return get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free)
 
 
+def update_character_info():
+    with open(os.path.join(models_path, "character_info.json"), "r", encoding='utf-8') as f:
+        default_character = json.load(f).get("deflaut_character", None)
+    characters_and_emotions = {}
+    for character_subdir in [f for f in os.listdir(models_path) if os.path.isdir(os.path.join(models_path, f))]:
+        if os.path.exists(os.path.join(models_path, character_subdir, "infer_config.json")):
+            try:
+                with open(os.path.join(models_path, character_subdir, "infer_config.json"), "r", encoding='utf-8') as f:
+                    config = json.load(f)
+                    emotion_list=[emotion for emotion in config.get('emotion_list', None)]
+                    if emotion_list is not None:
+                        characters_and_emotions[character_subdir] = emotion_list
+                    else:
+                        characters_and_emotions[character_subdir] = ["default"]
+            except:
+                characters_and_emotions[character_subdir] = ["default"]
+        else:
+            characters_and_emotions[character_subdir] = ["default"]
+                    
+    with open(os.path.join(models_path, "character_info.json"), "w", encoding='utf-8') as f:
+        json.dump({"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}, f, ensure_ascii=False, indent=4)
+
+    return {"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}
+        
+
 def test_audio_save():
     fs, audio_to_save=get_wav_from_text_api("""这是一段音频测试""",'多语种混合')
     file_path = "example_audio.wav"
@@ -246,3 +271,4 @@ def test_audio_save():
 
 
 test_audio_save()
+update_character_info()
