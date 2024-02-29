@@ -10,6 +10,9 @@ from string import Template
 global models_path
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
+global characters_and_emotions
+characters_and_emotions = {}
+
 if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)

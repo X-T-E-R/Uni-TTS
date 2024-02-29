@@ -15,6 +15,7 @@ app = Flask(__name__)
 def character_list():
     return jsonify(update_character_info()['characters_and_emotions'])
 
+
 @app.route('/tts', methods=['GET', 'POST'])
 def tts():
     global character_name
@@ -49,12 +50,16 @@ def tts():
     except ValueError:
         return jsonify({"error": "Invalid parameters for top_k, top_p, or temperature. They must be numbers."}), 400
     character_emotion = data.get('character_emotion', 'default')
-    sample_rate, audio_data = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion)
-    # 将音频数据转换为二进制流
-    buffer = io.BytesIO()
-    sf.write(buffer, audio_data, sample_rate, format='WAV')
-    buffer.seek(0)
-    return Response(buffer.getvalue(), mimetype='audio/wav')
+
+   
+    gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion)
+    sampling_rate, audio_data = next(gen)
+
+    wav = io.BytesIO()
+    sf.write(wav, audio_data, sampling_rate, format="wav")
+    wav.seek(0)
+   
+    return Response(wav,  mimetype='audio/wav')
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0')

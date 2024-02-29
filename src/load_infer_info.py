@@ -263,12 +263,12 @@ def update_character_info():
     return {"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}
         
 
-def test_audio_save():
-    fs, audio_to_save=get_wav_from_text_api("""这是一段音频测试""",'多语种混合')
-    file_path = "example_audio.wav"
-    from scipy.io.wavfile import write
-    write(file_path, fs, audio_to_save)
+# def test_audio_save():
+#     fs, audio_to_save=get_wav_from_text_api("""这是一段音频测试""",'多语种混合')
+#     file_path = "example_audio.wav"
+#     from scipy.io.wavfile import write
+#     write(file_path, fs, audio_to_save)
 
 
-test_audio_save()
+# test_audio_save()
 update_character_info()
