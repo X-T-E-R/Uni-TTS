@@ -5,3 +5,4 @@ trained/
 src/try_phones.py
 text/
 src/oriapi.py
+src/tts_backend_fastAPI.py
