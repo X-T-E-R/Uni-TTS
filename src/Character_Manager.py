@@ -40,7 +40,7 @@ emotional_styles = [
     "whispering", "terrified", "unfriendly"
 ]
 
-prompt_language_list = ["中文","英文","日文","多语种混合","中英混合","中日混合"]
+prompt_language_list = ["中文","英文","日文","多语种混合","中英混合","日英混合"]
 #预先建立相当数量的情感选择框
 all_emotion_num=len(emotional_styles)
 

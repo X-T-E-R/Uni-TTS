@@ -114,7 +114,7 @@ with gr.Blocks() as app:
         with gr.Column(scale=2):
             character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改右侧的Endpoint会相应的变化）",interactive=False)
             
-            text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","中日混合"], value="多语种混合", label="文本语言")
+            text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
             cha_name , character_emotion, characters_and_emotions = change_character_list(default_character_info_url)
             cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
             character_list_url.change(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
