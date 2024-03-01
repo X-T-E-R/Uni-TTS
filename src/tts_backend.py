@@ -61,5 +61,16 @@ def tts():
    
     return Response(wav,  mimetype='audio/wav')
 
+import json
+tts_port = 5000
+
+# 取得模型文件夹路径
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        _config = json.load(f)
+        tts_port = _config.get("tts_port", 5000)
+
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0', port=tts_port)

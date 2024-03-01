@@ -76,8 +76,19 @@ def change_character_list(character_list_url):
 def change_endpoint(endpoint):
     return gr.Textbox(endpoint.rsplit('/', 1)[0] + "/character_list")
 
-default_character_info_url = "http://127.0.0.1:5000/character_list"
-default_endpoint = "http://127.0.0.1:5000/tts"
+
+tts_port = 5000
+
+# 取得模型文件夹路径
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        _config = json.load(f)
+        tts_port = _config.get("tts_port", 5000)
+
+default_character_info_url = f"http://127.0.0.1:{tts_port}/character_list"
+default_endpoint = f"http://127.0.0.1:{tts_port}/tts"
 default_endpoint_data = """{
     "method": "POST",
     "body": {
@@ -107,7 +118,8 @@ with gr.Blocks() as app:
             cha_name , character_emotion, characters_and_emotions = change_character_list(default_character_info_url)
             cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
             character_list_url.change(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
-
+            scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
+            scan_character_list.click(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
         with gr.Column(scale=1):    
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")

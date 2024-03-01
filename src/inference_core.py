@@ -45,12 +45,27 @@ i18n = I18nAuto()
 
 os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'  # 确保直接启动推理UI时也能够设置。
 
-
 if torch.cuda.is_available():
     device = "cuda"
 else:
     device = "cpu"
     is_half = False
+
+# 取得模型文件夹路径
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        _config = json.load(f)
+        if _config.get("device", "auto") != "auto":
+            device = _config["device"]
+            if device == "cpu":
+                is_half = False
+        if _config.get("half_precision", "auto") != "auto":
+            is_half = _config["half_precision"]
+
+        
+print(f"device: {device}, is_half: {is_half}")
 
 tokenizer = AutoTokenizer.from_pretrained(bert_path)
 bert_model = AutoModelForMaskedLM.from_pretrained(bert_path)
