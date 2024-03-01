@@ -15,7 +15,8 @@ set PATH=%GIT_PATH%;%PATH%
 cd /d %REPO_PATH%
 
 :: 执行 git pull 更新本地仓库
-git pull
+git stash
+git pull https://github.com/X-T-E-R/TTS-for-GPT-soVITS.git main
 
 echo.
 echo 更新完成！
