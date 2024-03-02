@@ -81,13 +81,13 @@ def auto_generate_infer_config(character_path):
             # 从full_path中移除character_path部分
             relative_path = remove_character_path(full_path,character_path)
             # 根据文件扩展名和变量是否已赋值来更新变量
-            if file.endswith(".ckpt") and ckpt_file_found is None:
+            if file.lower().endswith(".ckpt") and ckpt_file_found is None:
                 ckpt_file_found = relative_path
-            elif file.endswith(".pth") and pth_file_found is None:
+            elif file.lower().endswith(".pth") and pth_file_found is None:
                 pth_file_found = relative_path
-            elif file.endswith(".wav") and wav_file_found is None:
+            elif file.lower().endswith(".wav") and wav_file_found is None:
                 wav_file_found = relative_path
-            elif file.endswith(".mp3"):
+            elif file.lower().endswith(".mp3"):
                 import pydub
                 # Convert mp3 to wav
                 wav_file_path = os.path.join(dirpath,os.path.splitext(file)[0] + ".wav")

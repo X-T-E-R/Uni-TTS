@@ -161,12 +161,13 @@ def scan_files(character_path):
             rev_path = os.path.relpath(full_path, character_path)
             print(full_path)
             # 根据文件扩展名和变量是否已赋值来更新变量
-            if file.endswith(".ckpt"):
+            if file.lower().endswith(".ckpt"):
                 ckpt_file_found.append(rev_path)
-            elif file.endswith(".pth"):
+            elif file.lower().endswith(".pth"):
                 pth_file_found.append(rev_path)
-            elif file.endswith(".wav"):
+            elif file.lower().endswith(".wav"):
                 wav_file_found.append(rev_path)
+            
     return ckpt_file_found, pth_file_found, wav_file_found
 
 def auto_genertate_json(chracter_dropdown,models_path  ):
