@@ -252,7 +252,7 @@ def change_parameters(index, wav_path, emotion_list, prompt_language, prompt_tex
     return gr.Dropdown(value=wav_path), gr.Dropdown(value=emotion_list), gr.Dropdown(value=prompt_language), gr.Textbox(value=prompt_text), gr.Audio(os.path.join(state["edited_character_path"],wav_path))
 
 with gr.Blocks() as app:
-   
+
     
     with gr.Row() as status_bar:       
         # 创建模型文件夹路径的输入框
@@ -269,7 +269,8 @@ with gr.Blocks() as app:
         auto_generate_info_button = gr.Button("自动生成info",size="lg",scale=2, variant="primary")
     # gr.HTML("<hr>")  # 添加一条水平分割线
         scan_button.click(scan_subfolder, inputs=[models_path],outputs=[chracter_dropdown])
-    gr.Markdown(f"请修改后点击最下方按钮进行保存")
+    gr.HTML("""<p>这是模型管理界面，为了实现对多段参考音频分配情感设计，如果您只有一段可不使用这个界面</p><p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp/hme8bw2r28vad3le">点击查看详细文档</a>。</p>""")
+    gr.Markdown(f"请修改后点击下方按钮进行保存")
 
    
 

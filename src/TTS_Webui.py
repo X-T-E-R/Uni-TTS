@@ -108,10 +108,7 @@ default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，
 characters_and_emotions = gr.State({})
 
 with gr.Blocks() as app:
-    gr.HTML("""<p>这是一个专为TTS（文本转语音）服务的前端项目，基于GPT-soVITS项目进行推理特化。</p>
-<p>使用前，请确认后端服务已启动。</p>
-<p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>
-                """)
+    gr.HTML("""<p>这是一个专为TTS（文本转语音）服务的前端项目，基于GPT-soVITS项目进行推理特化。</p><p>使用前，请确认后端服务已启动。</p><p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
     with gr.Row():
         text = gr.Textbox(value=default_text, label="输入文本",interactive=True,lines=8)
     with gr.Row():
@@ -136,6 +133,6 @@ with gr.Blocks() as app:
         sendData = gr.Button("发送请求",variant="primary")
         audioRecieve = gr.Audio(None, label="音频输出",type="filepath")
         sendData.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion], outputs=[audioRecieve])
-
+    
 
 app.launch(server_port=9867, show_error=True)
