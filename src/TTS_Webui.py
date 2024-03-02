@@ -7,10 +7,8 @@ from string import Template
 
 def load_character_emotions(character_name,characters_and_emotions):
     emotion_options = ["default"]
-    try:
-        emotion_options = characters_and_emotions.get(character_name, ["default"])
-    except:
-        pass
+    emotion_options = characters_and_emotions.get(character_name, ["default"])
+    
 
             
     return gr.Dropdown(emotion_options, value="default")
@@ -68,10 +66,10 @@ def change_character_list(character_list_url):
     try:
         characters_and_emotions = get_characters_and_emotions(character_list_url)
         character_names = [i for i in characters_and_emotions]
-        return gr.Dropdown(character_names,value=character_names[0],label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),gr.State(characters_and_emotions)
+        return gr.Dropdown(character_names,value=character_names[0],label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),characters_and_emotions
 
     except:
-        return gr.Dropdown([],value="", label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),gr.State({})
+        return gr.Dropdown([],value="", label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),{}
 
 def change_endpoint(endpoint):
     return gr.Textbox(endpoint.rsplit('/', 1)[0] + "/character_list")
@@ -105,10 +103,13 @@ default_endpoint_data = """{
 default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
 
 
-characters_and_emotions = gr.State({})
 
 with gr.Blocks() as app:
-    gr.HTML("""<p>这是一个专为TTS（文本转语音）服务的前端项目，基于GPT-soVITS项目进行推理特化。</p><p>使用前，请确认后端服务已启动。</p><p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
+    
+    gr.HTML("""<p>这是一个专为TTS（文本转语音）服务的前端项目，基于GPT-soVITS项目进行推理特化。</p>
+            <p>使用前，请确认后端服务已启动。</p>
+            <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决。</p>
+            <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
     with gr.Row():
         text = gr.Textbox(value=default_text, label="输入文本",interactive=True,lines=8)
     with gr.Row():
@@ -116,7 +117,8 @@ with gr.Blocks() as app:
             character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改右侧的Endpoint会相应的变化）",interactive=False)
             
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
-            cha_name , character_emotion, characters_and_emotions = change_character_list(default_character_info_url)
+            cha_name , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
+            characters_and_emotions = gr.State(characters_and_emotions_)
             cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
             character_list_url.change(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
