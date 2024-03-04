@@ -60,16 +60,33 @@ def get_characters_and_emotions(character_list_url):
     except:
         raise Exception("请求失败，请检查URL是否正确")
 
-def change_character_list(character_list_url):
+def change_character_list(character_list_url,cha_name="", auto_emotion=False , character_emotion="default"):
     
     characters_and_emotions={}
+    
     try:
         characters_and_emotions = get_characters_and_emotions(character_list_url)
         character_names = [i for i in characters_and_emotions]
-        return gr.Dropdown(character_names,value=character_names[0],label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),characters_and_emotions
-
+        if len(character_names)!=0:
+            if cha_name in character_names:
+                character_name_value = cha_name
+            else:
+                character_name_value = character_names[0]
+        else:
+            character_name_value = ""
+        emotions=characters_and_emotions.get(character_name_value, ["default"])
+        emotion_value = character_emotion
+        if auto_emotion==False and emotion_value not in emotions:
+            emotion_value = "default"
     except:
-        return gr.Dropdown([],value="", label="选择角色"), gr.Dropdown(["default"], value="default", label="情感列表"),{}
+        character_names = []
+        character_name_value = ""
+        emotions = ["default"]
+        emotion_value = "default"
+        characters_and_emotions={}
+    if auto_emotion:
+            return gr.Dropdown(character_names,value=character_name_value,label="选择角色"),gr.Checkbox(auto_emotion,label="是否自动匹配情感"), gr.Dropdown(["auto"], value="auto", label="情感列表",interactive=False),characters_and_emotions
+    return gr.Dropdown(character_names,value=character_name_value,label="选择角色"),gr.Checkbox(auto_emotion,label="是否自动匹配情感"), gr.Dropdown(emotions, value=emotion_value, label="情感列表",interactive=True),characters_and_emotions
 
 def change_endpoint(endpoint):
     return gr.Textbox(endpoint.rsplit('/', 1)[0] + "/character_list")
@@ -117,12 +134,14 @@ with gr.Blocks() as app:
             character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改右侧的Endpoint会相应的变化）",interactive=False)
             
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
-            cha_name , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
+            
+            cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
-            cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
-            character_list_url.change(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
-            scan_character_list.click(change_character_list, inputs=[character_list_url],outputs=[cha_name, character_emotion,characters_and_emotions])
+            cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
+            character_list_url.change(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+            scan_character_list.click(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+            auto_emotion_checkbox.input(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
         with gr.Column(scale=1):    
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")

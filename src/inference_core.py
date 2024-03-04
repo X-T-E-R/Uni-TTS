@@ -264,7 +264,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
     audio_opt = []
     if not ref_free:
         phones1,bert1,norm_text1=get_phones_and_bert(prompt_text, prompt_language)
-
+    
     for text in texts:
         # 解决输入目标文本的空行导致报错的问题
         if (len(text.strip()) == 0):
@@ -275,6 +275,7 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         print(i18n("前端处理后的文本(每句):"), norm_text2)
         if not ref_free:
             bert = torch.cat([bert1, bert2], 1)
+            # print(f"bert1:{bert1},bert2:{bert2},bert:{bert}")
             all_phoneme_ids = torch.LongTensor(phones1+phones2).to(device).unsqueeze(0)
         else:
             bert = bert2

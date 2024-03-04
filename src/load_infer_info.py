@@ -188,11 +188,13 @@ def get_deflaut_character_name():
 
     return default_character
 
-
 character_name = get_deflaut_character_name()
 
-load_character(character_name)
-
+def match_character_emotion(character_path):
+    if not os.path.exists(os.path.join(character_path, "reference_audio")):
+        # 如果没有reference_audio文件夹，就返回None
+        return None, None, None
+    
 
 def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default"):
     # 加载环境配置
@@ -201,25 +203,29 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
    
     
     # 尝试从配置中提取参数，如果找不到则设置为None
-    ref_wav_path = config.get('ref_wav_path', None)
+    ref_wav_path =  None
     prompt_text = None
     prompt_language = None
-    # 这是新版的infer_config.json文件，如果出现错误请删除infer_config.json文件，让系统自动生成
-    emotion_list=config.get('emotion_list', None)# 这是新版的infer_config文件，如果出现错误请删除infer_config.json文件，让系统自动生成 
-    now_emotion="default"
-    for emotion, details in emotion_list.items():
-        print(emotion)
-        if emotion==character_emotion:
-            now_emotion=character_emotion
-            break
-    for emotion, details in emotion_list.items():
-        if emotion==now_emotion:
-            ref_wav_path = os.path.join(os.path.join(models_path,character_name), details['ref_wav_path'])
-            prompt_text = details['prompt_text']
-            prompt_language = details['prompt_language']
-            break
+    if character_emotion == "auto":
+        # 如果是auto模式，那么就自动决定情感
+        ref_wav_path, prompt_text, prompt_language = match_character_emotion(os.path.join(models_path, character_name))
     if ref_wav_path is None:
-        print("找不到ref_wav_path！请删除infer_config.json文件，让系统自动生成")
+        # 未能通过auto匹配到情感，就尝试使用指定的情绪列表
+        emotion_list=config.get('emotion_list', None)# 这是新版的infer_config文件，如果出现错误请删除infer_config.json文件，让系统自动生成 
+        now_emotion="default"
+        for emotion, details in emotion_list.items():
+            print(emotion)
+            if emotion==character_emotion:
+                now_emotion=character_emotion
+                break
+        for emotion, details in emotion_list.items():
+            if emotion==now_emotion:
+                ref_wav_path = os.path.join(os.path.join(models_path,character_name), details['ref_wav_path'])
+                prompt_text = details['prompt_text']
+                prompt_language = details['prompt_language']
+                break
+        if ref_wav_path is None:
+            print("找不到ref_wav_path！请删除infer_config.json文件，让系统自动生成")
             
     print(prompt_text)
     
