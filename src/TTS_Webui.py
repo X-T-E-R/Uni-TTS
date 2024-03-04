@@ -5,24 +5,53 @@ import requests
 import numpy as np
 from string import Template
 
-def load_character_emotions(character_name,characters_and_emotions):
+
+def load_character_emotions(character_name, characters_and_emotions):
     emotion_options = ["default"]
     emotion_options = characters_and_emotions.get(character_name, ["default"])
-    
 
-            
     return gr.Dropdown(emotion_options, value="default")
 
-def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion,stream="False"):
+
+def send_request(
+    endpoint,
+    endpoint_data,
+    text,
+    cha_name,
+    text_language,
+    top_k,
+    top_p,
+    temperature,
+    character_emotion,
+    stream="False",
+):
     print(stream)
     urlencoded_text = requests.utils.quote(text)
 
     # 使用Template填充变量
     endpoint_template = Template(endpoint)
-    final_endpoint = endpoint_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion,stream=stream)
+    final_endpoint = endpoint_template.substitute(
+        chaName=cha_name,
+        speakText=urlencoded_text,
+        textLanguage=text_language,
+        topK=top_k,
+        topP=top_p,
+        temperature=temperature,
+        characterEmotion=character_emotion,
+        stream=stream,
+    )
 
     endpoint_data_template = Template(endpoint_data)
-    filled_json_str = endpoint_data_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion,stream=stream)
+    filled_json_str = endpoint_data_template.substitute(
+        chaName=cha_name,
+        speakText=urlencoded_text,
+        textLanguage=text_language,
+        topK=top_k,
+        topP=top_p,
+        temperature=temperature,
+        characterEmotion=character_emotion,
+        stream=stream,
+    )
     # 解析填充后的JSON字符串
     request_data = json.loads(filled_json_str)
     body = request_data["body"]
@@ -32,8 +61,10 @@ def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, 
         response = requests.post(final_endpoint, json=body)
         # 检查请求是否成功
         if response.status_code == 200:
-        # 生成保存路径
-            save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+            # 生成保存路径
+            save_path = (
+                f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+            )
 
             # 检查保存路径是否存在
             if not os.path.exists("tmp_audio"):
@@ -49,27 +80,27 @@ def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, 
             print(f"请求失败，状态码：{response.status_code}")
             return gr.Audio(None, type="filepath")
     # else:
-        # # 发送POST请求
-        # response = requests.post(final_endpoint, json=body, stream=True)
-        # # 检查请求是否成功
-        # if response.status_code == 200:
-        #     # 生成保存路径
-        #     save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+    # # 发送POST请求
+    # response = requests.post(final_endpoint, json=body, stream=True)
+    # # 检查请求是否成功
+    # if response.status_code == 200:
+    #     # 生成保存路径
+    #     save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
 
-        #     # 检查保存路径是否存在
-        #     if not os.path.exists("tmp_audio"):
-        #         os.makedirs("tmp_audio")
+    #     # 检查保存路径是否存在
+    #     if not os.path.exists("tmp_audio"):
+    #         os.makedirs("tmp_audio")
 
-        #     # 保存音频文件到本地
-        #     with open(save_path, "wb") as f:
-        #         for chunk in response.iter_content():
-        #             if chunk:
-        #                 f.write(chunk)
-        #                 yield gr.Audio(np.frombuffer(chunk, dtype=np.int16),streaming=True,autoplay=True,type="numpy")
+    #     # 保存音频文件到本地
+    #     with open(save_path, "wb") as f:
+    #         for chunk in response.iter_content():
+    #             if chunk:
+    #                 f.write(chunk)
+    #                 yield gr.Audio(np.frombuffer(chunk, dtype=np.int16),streaming=True,autoplay=True,type="numpy")
 
-        # else:
-        #     print(f"请求失败，状态码：{response.status_code}")
-        #     return gr.Audio(None, type="filepath",streaming=True,autoplay=True)
+    # else:
+    #     print(f"请求失败，状态码：{response.status_code}")
+    #     return gr.Audio(None, type="filepath",streaming=True,autoplay=True)
 
 
 def get_characters_and_emotions(character_list_url):
@@ -82,36 +113,50 @@ def get_characters_and_emotions(character_list_url):
     except:
         raise Exception("请求失败，请检查URL是否正确")
 
-def change_character_list(character_list_url,cha_name="", auto_emotion=False , character_emotion="default"):
-    
-    characters_and_emotions={}
-    
+
+def change_character_list(
+    character_list_url, cha_name="", auto_emotion=False, character_emotion="default"
+):
+
+    characters_and_emotions = {}
+
     try:
         characters_and_emotions = get_characters_and_emotions(character_list_url)
         character_names = [i for i in characters_and_emotions]
-        if len(character_names)!=0:
+        if len(character_names) != 0:
             if cha_name in character_names:
                 character_name_value = cha_name
             else:
                 character_name_value = character_names[0]
         else:
             character_name_value = ""
-        emotions=characters_and_emotions.get(character_name_value, ["default"])
+        emotions = characters_and_emotions.get(character_name_value, ["default"])
         emotion_value = character_emotion
-        if auto_emotion==False and emotion_value not in emotions:
+        if auto_emotion == False and emotion_value not in emotions:
             emotion_value = "default"
     except:
         character_names = []
         character_name_value = ""
         emotions = ["default"]
         emotion_value = "default"
-        characters_and_emotions={}
+        characters_and_emotions = {}
     if auto_emotion:
-            return gr.Dropdown(character_names,value=character_name_value,label="选择角色"),gr.Checkbox(auto_emotion,label="是否自动匹配情感"), gr.Dropdown(["auto"], value="auto", label="情感列表",interactive=False),characters_and_emotions
-    return gr.Dropdown(character_names,value=character_name_value,label="选择角色"),gr.Checkbox(auto_emotion,label="是否自动匹配情感"), gr.Dropdown(emotions, value=emotion_value, label="情感列表",interactive=True),characters_and_emotions
+        return (
+            gr.Dropdown(character_names, value=character_name_value, label="选择角色"),
+            gr.Checkbox(auto_emotion, label="是否自动匹配情感"),
+            gr.Dropdown(["auto"], value="auto", label="情感列表", interactive=False),
+            characters_and_emotions,
+        )
+    return (
+        gr.Dropdown(character_names, value=character_name_value, label="选择角色"),
+        gr.Checkbox(auto_emotion, label="是否自动匹配情感"),
+        gr.Dropdown(emotions, value=emotion_value, label="情感列表", interactive=True),
+        characters_and_emotions,
+    )
+
 
 def change_endpoint(endpoint):
-    return gr.Textbox(endpoint.rsplit('/', 1)[0] + "/character_list")
+    return gr.Textbox(endpoint.rsplit("/", 1)[0] + "/character_list")
 
 
 tts_port = 5000
@@ -141,7 +186,6 @@ default_endpoint_data = """{
     }
 }"""
 default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
-
 
 
 with gr.Blocks() as app:
