@@ -115,45 +115,42 @@ default_endpoint_data = """{
         "top_p": ${topP},
         "temperature": ${temperature}
     }
-}
-"""
+}"""
 default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
 
 
 
 with gr.Blocks() as app:
     
-    gr.HTML("""<p>这是一个专为TTS（文本转语音）服务的前端项目，基于GPT-soVITS项目进行推理特化。</p>
-            <p>使用前，请确认后端服务已启动。</p>
-            <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决。</p>
+    gr.HTML("""<p>使用前，请确认后端服务已启动。</p>
+            <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）。</p>
             <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
     with gr.Row():
         text = gr.Textbox(value=default_text, label="输入文本",interactive=True,lines=8)
     with gr.Row():
         with gr.Column(scale=2):
-            character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改右侧的Endpoint会相应的变化）",interactive=False)
-            
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
             
             cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
-            cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
-            character_list_url.change(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
-            scan_character_list.click(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
-            auto_emotion_checkbox.input(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
         with gr.Column(scale=1):    
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
         with gr.Column(scale=2):
             endpoint = gr.Textbox(value=default_endpoint, label="Endpoint")
+            character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改上面的Endpoint会相应的变化）",interactive=False)
             endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式")
             endpoint.blur(change_endpoint, inputs=[endpoint],outputs=[character_list_url])
     with gr.Row():
         sendData = gr.Button("发送请求",variant="primary")
         audioRecieve = gr.Audio(None, label="音频输出",type="filepath")
-        sendData.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion], outputs=[audioRecieve])
-    
+    sendData.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion], outputs=[audioRecieve])
+    cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
+    character_list_url.change(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+    scan_character_list.click(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+    auto_emotion_checkbox.input(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+
 
 app.launch(server_port=9867, show_error=True)

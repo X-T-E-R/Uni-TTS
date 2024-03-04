@@ -1,120 +1,42 @@
-## 介绍
-这是一个后端项目
+这是一个基于[GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS)开发的 推理特化的 前后端项目
 
-基于[https://github.com/RVC-Boss/GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
+并且实现了 前后端分离、模型管理、多角色/情绪切换等特性
 
-对推理进行了特化，前后端分离，支持快速切换人物、模型管理等功能
+本项目不考虑模型的训练，仅考虑使用它们，试图提供一种方便快捷而舒适的方式让每个人都能享受到AI技术的发展
 
-可以实现快速切换人物
-## 有关于更新
-2024.2.26进行了大更新，请重新覆盖安装
-并且，十分建议查看这个中文文档
-[https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e](https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e)
+你如果想要训练，请去装原版：[https://www.yuque.com/baicaigongchang1145haoyuangong/ib3g1e](https://www.yuque.com/baicaigongchang1145haoyuangong/ib3g1e)
+### 使用环境建议
+`推荐使用/部署环境`：`Windows`
+`可选部署位置`：`Linux`( 正在实现 )
+`硬件配置`：对于想要实时TTS，推荐配置3070以上的显卡
 
+使用前端生成的话有CPU、内存不要太低都行
 
+### 使用流程
 
-## 安装方式
+1. 下载整合包
+2. 放入模型文件
+3. 双击运行（到这一步已经能在电脑上用了）
+4. 去配置TTS实现听书
+### 有关介绍视频、交流群
+github链接，觉得这个项目好的请为我点一个star，这真的对我很重要！
+[https://github.com/X-T-E-R/TTS-for-GPT-soVITS](https://github.com/X-T-E-R/TTS-for-GPT-soVITS)
 
-对于安装
+QQ交流群：`863760614`
 
-我们可以看看
-[https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e](https://www.yuque.com/xter/zibxlp/nqi871glgxfy717e)
-
-这个中文文档会更加详细
-
-现在会更推荐直接以整合包的形式安装
-
-## 导入模型
-！注意，这个不同于主项目，而是将模型以人物卡的形式导入
-
-在主项目的trained文件夹，通过子文件夹的形式导入人物
-
-### 文件夹要求
-文件夹名称就是人物名称
-
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708088625419-3e47692d-ca75-4202-9d72-538550a1806b.png#averageHue=%23f9f8f8&clientId=ue190b2a0-f82e-4&from=paste&height=108&id=u1b07e1fb&originHeight=216&originWidth=1012&originalType=binary&ratio=2&rotation=0&showTitle=false&size=19455&status=done&style=none&taskId=u31fe83d2-1cb0-44d1-a666-26cef7b5f1a&title=&width=506)
-
-里面应该至少有3个文件
-
-以`pth`/`ckpt`/`wav`后缀名结尾
-
-### *如何指定默认角色
-在`trained`文件夹下有一个`character_info.json`
-通过修改它可以改变默认角色
-```json
-{
-"deflaut_character":"hutao"
-}
-```
-### 如何管理模型
-
-我写了一个模型管理界面`Character_Manager.py`，可以通过bat启动
-
-在里面可以方便的管理模型，添加情绪等
-
-## 如何使用
-
-直接双击bat即可
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708089147914-5b703fac-770e-47d5-b928-47389da6d7b3.png#averageHue=%231e1d1c&clientId=ue190b2a0-f82e-4&from=paste&height=207&id=axeUa&originHeight=413&originWidth=859&originalType=binary&ratio=2&rotation=0&showTitle=false&size=46567&status=done&style=none&taskId=ub1efa501-62d6-4b60-889a-fdacb64f703&title=&width=429.5)
-
-### 阅读3.0配置使用例
-比如用阅读3.0
-
-[https://github.com/gedoor/legado](https://github.com/gedoor/legado)
-
-请直接看语雀文档：https://www.yuque.com/xter/zibxlp/uocryi6ryatwocu3
+b站介绍视频：
+[【AI语音/听书】一键启动！点击即用的推理特化整合包【TTS for GPT-soVITS】_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Wr421p7xv/?spm_id_from=333.999.top_right_bar_window_history.content.click)
+[【AI听书】开源免费！让喜欢的角色给你读书！【API for GPT-SoVITS】_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Lm411D7pw/?spm_id_from=333.999.0.0)
 
 
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708089393043-b3665805-a77b-49c5-9207-04c52b92ccbd.png#averageHue=%23272626&clientId=ue190b2a0-f82e-4&from=paste&height=278&id=u9921c858&originHeight=555&originWidth=558&originalType=binary&ratio=2&rotation=0&showTitle=false&size=66151&status=done&style=none&taskId=ue357c9d2-b7d6-4368-8ea2-a328262f646&title=&width=279)
+### 界面展示
+#### 前端界面
+![image-20240304172102634](./assets/image-20240304172102634.png)
+#### 后端界面
+![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1709370809097-aa8a4ed6-822e-4513-b6f8-ecff8e988862.png#averageHue=%23111111&clientId=ub48ea26e-150c-4&from=paste&height=611&id=uda36d703&originHeight=1222&originWidth=2346&originalType=binary&ratio=2&rotation=0&showTitle=false&size=141762&status=done&style=none&taskId=u38824ef1-d0ad-48bb-8c8f-000f90f5148&title=&width=1173)
+#### 模型管理界面
+![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1709370897258-d31aceaa-c8c6-4a03-a1da-33004df5a92e.png#averageHue=%23fdf9f5&clientId=u385fa907-0641-4&from=paste&height=1032&id=ubd47d9de&originHeight=2064&originWidth=3815&originalType=binary&ratio=2&rotation=0&showTitle=false&size=875603&status=done&style=none&taskId=u3df53cf5-170e-4a8d-8615-23e15b96a54&title=&width=1907.5)
 
-在朗读引擎中加入对应人名的朗读引擎
-
-如图配置
-![image.png](https://cdn.nlark.com/yuque/0/2024/png/35975318/1708089464053-fb6f72f5-929c-408e-9dec-4f63b7c32bf8.png#averageHue=%23653727&clientId=ue190b2a0-f82e-4&from=paste&height=308&id=u7a77de52&originHeight=615&originWidth=566&originalType=binary&ratio=2&rotation=0&showTitle=false&size=117815&status=done&style=none&taskId=u1f7aa5c3-075f-4086-be5b-46d38dd4fed&title=&width=283)
-```json
-http://192.168.0.106:5000/tts,
-{
-    "method": "POST",
-    "body": {
-        "cha_name": "hutao",
-        "text": "{{java.encodeURI(speakText)}}"
-    }
-}
-```
-调整链接为你的挂载点
-### api
-它默认运行在5000端口，挂载点是例如`[http://192.168.0.106:5000/tts](http://192.168.0.106:5000/tts,)`
-
-#### 接受的数据
-最少项：
-```json
-{
-    "method": "POST",
-    "body": {
-       
-        "text": "{{java.encodeURI(speakText)}}"
-    }
-}
-```
-详细选项
-```json
-{
-    "method": "POST",
-    "body": {
-        "cha_name": "hutao",
-        "text": "{{java.encodeURI(speakText)}}",
-        "top_k": 3,
-        "top_p": 0.6,
-        "temperature": 0.6
-    }
-}
-```
-其中`text`是必要项
-
-`cha_name`可选，请确保在`trained`中存在对应模型，不指定则使用默认模型
-
-其它参数如果不知道怎么指定，可以不指定
-
-
-#### 返回的数据
-返回`audio/wav`
+### 前瞻
+未来可能会支持易于在服务器端配置的特性，将会大大降低使用的配置，到时候真的只需要一台手机。
+并且会写一个好看的前端类似voicepeak，给创作者更好的体验
