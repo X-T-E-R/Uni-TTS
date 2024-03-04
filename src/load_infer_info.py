@@ -2,7 +2,7 @@ global character_name
 
 import os, json
 
-from inference_core import get_tts_wav, change_sovits_weights, change_gpt_weights
+from inference_core import get_tts_wav, get_streaming_tts_wav, change_sovits_weights, change_gpt_weights
 
 def load_infer_config(character_path):
     config_path = os.path.join(character_path, "infer_config.json")
@@ -189,6 +189,7 @@ def get_deflaut_character_name():
     return default_character
 
 character_name = get_deflaut_character_name()
+load_character(character_name)
 
 def match_character_emotion(character_path):
     if not os.path.exists(os.path.join(character_path, "reference_audio")):
@@ -196,7 +197,7 @@ def match_character_emotion(character_path):
         return None, None, None
     
 
-def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default"):
+def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default",stream=False):
     # 加载环境配置
     config = load_infer_config(os.path.join(models_path, character_name))
     
@@ -241,7 +242,12 @@ def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=
 
     # 调用原始的get_tts_wav函数
     # 注意：这里假设get_tts_wav函数及其所需的其它依赖已经定义并可用
-    return get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free)
+    if stream == False:
+        return get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free, stream=stream)
+    else:
+        return get_streaming_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free, byte_stream=True)
+
+
 
 
 def update_character_info():

@@ -1,7 +1,9 @@
 import soundfile as sf
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, jsonify, stream_with_context,send_file
 import io, os
 import urllib.parse,sys
+import tempfile
+import hashlib
 
 # 将当前文件所在的目录添加到 sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -10,6 +12,16 @@ from load_infer_info import load_character, character_name, get_wav_from_text_ap
 
 app = Flask(__name__)
 
+# 存储临时文件的字典
+temp_files = {}
+
+# 用于防止重复请求
+def generate_file_hash(*args):
+    """生成基于输入参数的哈希值，用于唯一标识一个请求"""
+    hash_object = hashlib.md5()
+    for arg in args:
+        hash_object.update(str(arg).encode())
+    return hash_object.hexdigest()
 
 @app.route('/character_list', methods=['GET'])
 def character_list():
@@ -29,37 +41,51 @@ def tts():
 
     text = urllib.parse.unquote(data.get('text', ''))
     cha_name = data.get('cha_name', None)
-
-    # 构建期望的目录路径
     expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
-    # 检查是否提供了cha_name，且与当前全局变量不同，以及路径是否存在
+    # 检查cha_name和路径
     if cha_name and cha_name != character_name and expected_path and os.path.exists(expected_path):
-        character_name = cha_name  # 更新全局变量
+        character_name = cha_name
         print(f"Loading character {character_name}")
-        load_character(character_name)  # 加载新角色
+        load_character(character_name)  
     elif expected_path and not os.path.exists(expected_path):
         return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
 
     text_language = data.get('text_language', '多语种混合')
-     # 强制转换为适当的类型
     try:
         top_k = int(data.get('top_k', 6))
         top_p = float(data.get('top_p', 0.8))
         temperature = float(data.get('temperature', 0.8))
+        stream = data.get('stream', 'False').lower() == 'true'
+        save_temp = data.get('save_temp', 'True').lower() == 'true'
     except ValueError:
-        return jsonify({"error": "Invalid parameters for top_k, top_p, or temperature. They must be numbers."}), 400
+        return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
     character_emotion = data.get('character_emotion', 'default')
 
-   
-    gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion)
-    sampling_rate, audio_data = next(gen)
+    request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name)
+    if stream == False:
+        if save_temp:
+            if request_hash in temp_files:
+                return send_file(temp_files[request_hash], mimetype='audio/wav')
+            else:
+                gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+                sampling_rate, audio_data = next(gen)
+                temp_file_path = tempfile.mktemp(suffix='.wav')
+                with open(temp_file_path, 'wb') as temp_file:
+                    sf.write(temp_file, audio_data, sampling_rate, format='wav')
+                temp_files[request_hash] = temp_file_path
+                return send_file(temp_file_path, mimetype='audio/wav')
+        else:
+            gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+            sampling_rate, audio_data = next(gen)
+            wav = io.BytesIO()
+            sf.write(wav, audio_data, sampling_rate, format="wav")
+            wav.seek(0)
+            return Response(wav, mimetype='audio/wav')
+    else:
+        gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+        return Response(stream_with_context(gen),  mimetype='audio/wav')
 
-    wav = io.BytesIO()
-    sf.write(wav, audio_data, sampling_rate, format="wav")
-    wav.seek(0)
-   
-    return Response(wav,  mimetype='audio/wav')
 
 import json
 tts_port = 5000

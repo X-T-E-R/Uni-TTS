@@ -8,8 +8,8 @@ tensorboard
 librosa==0.9.2
 numba==0.56.4
 pytorch-lightning
-gradio==3.50.2
-gradio_client==0.6.1
+gradio==4.19
+gradio_client
 ffmpeg-python
 onnxruntime
 tqdm
@@ -27,5 +27,5 @@ PyYAML
 psutil
 jieba_fast
 jieba
-LangSegment>=0.2.0
+LangSegment>=0.2.3
 Faster_Whisper

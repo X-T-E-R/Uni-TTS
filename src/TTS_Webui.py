@@ -13,41 +13,63 @@ def load_character_emotions(character_name,characters_and_emotions):
             
     return gr.Dropdown(emotion_options, value="default")
 
-def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion):
+def send_request(endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion,stream="False"):
+    print(stream)
     urlencoded_text = requests.utils.quote(text)
 
     # 使用Template填充变量
     endpoint_template = Template(endpoint)
-    final_endpoint = endpoint_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion)
+    final_endpoint = endpoint_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion,stream=stream)
 
     endpoint_data_template = Template(endpoint_data)
-    filled_json_str = endpoint_data_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion)
+    filled_json_str = endpoint_data_template.substitute(chaName=cha_name, speakText=urlencoded_text,textLanguage=text_language, topK=top_k, topP=top_p, temperature=temperature, characterEmotion=character_emotion,stream=stream)
     # 解析填充后的JSON字符串
     request_data = json.loads(filled_json_str)
     body = request_data["body"]
+    if stream.lower() == "false":
+        print(f"发送请求到{final_endpoint}")
+        # 发送POST请求
+        response = requests.post(final_endpoint, json=body)
+        # 检查请求是否成功
+        if response.status_code == 200:
+        # 生成保存路径
+            save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
 
-    # 发送POST请求
-    response = requests.post(final_endpoint, json=body)
+            # 检查保存路径是否存在
+            if not os.path.exists("tmp_audio"):
+                os.makedirs("tmp_audio")
 
-    # 检查请求是否成功
-    if response.status_code == 200:
-    # 生成保存路径
-        save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+            # 保存音频文件到本地
+            with open(save_path, "wb") as f:
+                f.write(response.content)
 
-        # 检查保存路径是否存在
-        if not os.path.exists("tmp_audio"):
-            os.makedirs("tmp_audio")
+            # 返回给gradio
+            return gr.Audio(save_path, type="filepath")
+        else:
+            print(f"请求失败，状态码：{response.status_code}")
+            return gr.Audio(None, type="filepath")
+    # else:
+        # # 发送POST请求
+        # response = requests.post(final_endpoint, json=body, stream=True)
+        # # 检查请求是否成功
+        # if response.status_code == 200:
+        #     # 生成保存路径
+        #     save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
 
-        # 保存音频文件到本地
-        with open(save_path, "wb") as f:
-            f.write(response.content)
+        #     # 检查保存路径是否存在
+        #     if not os.path.exists("tmp_audio"):
+        #         os.makedirs("tmp_audio")
 
-        # 返回给gradio
-        return gr.Audio(save_path, type="filepath")
-            
-       
-    else:
-        print(f"请求失败，状态码：{response.status_code}")
+        #     # 保存音频文件到本地
+        #     with open(save_path, "wb") as f:
+        #         for chunk in response.iter_content():
+        #             if chunk:
+        #                 f.write(chunk)
+        #                 yield gr.Audio(np.frombuffer(chunk, dtype=np.int16),streaming=True,autoplay=True,type="numpy")
+
+        # else:
+        #     print(f"请求失败，状态码：{response.status_code}")
+        #     return gr.Audio(None, type="filepath",streaming=True,autoplay=True)
 
 
 def get_characters_and_emotions(character_list_url):
@@ -113,7 +135,9 @@ default_endpoint_data = """{
         "text_language": "${textLanguage}",
         "top_k": ${topK},
         "top_p": ${topP},
-        "temperature": ${temperature}
+        "temperature": ${temperature},
+        "stream": "${stream}",
+        "save_temp": "False"
     }
 }"""
 default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
@@ -143,10 +167,19 @@ with gr.Blocks() as app:
             character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改上面的Endpoint会相应的变化）",interactive=False)
             endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式")
             endpoint.blur(change_endpoint, inputs=[endpoint],outputs=[character_list_url])
-    with gr.Row():
-        sendData = gr.Button("发送请求",variant="primary")
-        audioRecieve = gr.Audio(None, label="音频输出",type="filepath")
-    sendData.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion], outputs=[audioRecieve])
+    with gr.Tabs():
+        with gr.Tab(label="请求完整音频"):
+            with gr.Row():
+                sendRequest = gr.Button("发送请求",variant="primary")
+                audioRecieve = gr.Audio(None, label="音频输出",type="filepath",streaming=False)
+        with gr.Tab(label="流式音频"):
+            with gr.Row():
+                gr.Textbox("还在施工，敬请期待，API已支持",interactive=False)
+            with gr.Row():
+                sendStreamRequest = gr.Button("发送请求",variant="primary",interactive=False)
+                audioStreamRecieve = gr.Audio(None, label="音频输出",streaming=True,autoplay=True,interactive=False)
+    sendRequest.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion, gr.State("False")], outputs=[audioRecieve])
+    sendStreamRequest.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion, gr.State("True")], outputs=[audioStreamRecieve])
     cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
     character_list_url.change(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
     scan_character_list.click(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])

@@ -214,7 +214,7 @@ def get_bert_inf(phones, word2ph, norm_text, language):
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
 
-def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, top_p=0.6, temperature=0.6, ref_free = False):
+def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, how_to_cut=i18n("不切"), top_k=20, top_p=0.6, temperature=0.6, ref_free=False, stream=False):
     if prompt_text is None or len(prompt_text) == 0:
         ref_free = True
     t0 = ttime()
@@ -255,78 +255,89 @@ def get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language,
         prompt_semantic = codes[0, 0]
     t1 = ttime()
 
-    
     text = auto_cut(text)
-    
+    while "\n\n" in text:
+        text = text.replace("\n\n", "\n")
     print(i18n("实际输入的目标文本(切句后):"), text)
     texts = text.split("\n")
     texts = merge_short_text_in_array(texts, 5)
     audio_opt = []
     if not ref_free:
-        phones1,bert1,norm_text1=get_phones_and_bert(prompt_text, prompt_language)
-    
+        phones1, bert1, norm_text1 = get_phones_and_bert(prompt_text, prompt_language)
+    else:
+        phones1, bert1 = None, None
+
     for text in texts:
         # 解决输入目标文本的空行导致报错的问题
         if (len(text.strip()) == 0):
             continue
-        if (text[-1] not in splits): text += "。" if text_language != "en" else "."
-        print(i18n("实际输入的目标文本(每句):"), text)
-        phones2,bert2,norm_text2=get_phones_and_bert(text, text_language)
-        print(i18n("前端处理后的文本(每句):"), norm_text2)
-        if not ref_free:
-            bert = torch.cat([bert1, bert2], 1)
-            # print(f"bert1:{bert1},bert2:{bert2},bert:{bert}")
-            all_phoneme_ids = torch.LongTensor(phones1+phones2).to(device).unsqueeze(0)
-        else:
-            bert = bert2
-            all_phoneme_ids = torch.LongTensor(phones2).to(device).unsqueeze(0)
-
-        bert = bert.to(device).unsqueeze(0)
-        all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(device)
-        prompt = prompt_semantic.unsqueeze(0).to(device)
-        t2 = ttime()
-        with torch.no_grad():
-            # pred_semantic = t2s_model.model.infer(
-            pred_semantic, idx = t2s_model.model.infer_panel(
-                all_phoneme_ids,
-                all_phoneme_len,
-                None if ref_free else prompt,
-                bert,
-                # prompt_phone_len=ph_offset,
-                top_k=top_k,
-                top_p=top_p,
-                temperature=temperature,
-                early_stop_num=hz * max_sec,
-            )
-        t3 = ttime()
-        # print(pred_semantic.shape,idx)
-        pred_semantic = pred_semantic[:, -idx:].unsqueeze(
-            0
-        )  # .unsqueeze(0)#mq要多unsqueeze一次
-        refer = get_spepc(hps, ref_wav_path)  # .to(device)
-        if is_half == True:
-            refer = refer.half().to(device)
-        else:
-            refer = refer.to(device)
-        # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
-        audio = (
-            vq_model.decode(
-                pred_semantic, torch.LongTensor(phones2).to(device).unsqueeze(0), refer
-            )
-                .detach()
-                .cpu()
-                .numpy()[0, 0]
-        )  ###试试重建不带上prompt部分
-        max_audio=np.abs(audio).max()#简单防止16bit爆音
-        if max_audio>1:audio/=max_audio
+        audio = get_tts_chunk(ref_wav_path, text, text_language, bert1, phones1, prompt_semantic,
+                              top_k, top_p, temperature, ref_free, t0, t1)
         audio_opt.append(audio)
         audio_opt.append(zero_wav)
-        t4 = ttime()
-    print("%.3f\t%.3f\t%.3f\t%.3f" % (t1 - t0, t2 - t1, t3 - t2, t4 - t3))
-    yield hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(
-        np.int16
-    )
+        if (stream):
+            # 流式模式下每句返回一次
+            yield (np.concatenate([audio, zero_wav], 0) * 32768).astype(np.int16).tobytes()
+    
+    if (not stream):
+        # 非流式最终合并后返回
+        yield hps.data.sampling_rate, (np.concatenate(audio_opt, 0) * 32768).astype(
+            np.int16
+        )
 
+def get_tts_chunk(ref_wav_path, text, text_language, bert1, phones1, prompt_semantic, top_k, top_p, temperature, ref_free, t0, t1):
+    if (text[-1] not in splits): text += "。" if text_language != "en" else "."
+    print(i18n("实际输入的目标文本(每句):"), text)
+    phones2, bert2, norm_text2 = get_phones_and_bert(text, text_language)
+    print(i18n("前端处理后的文本(每句):"), norm_text2)
+    if not ref_free:
+        bert = torch.cat([bert1, bert2], 1)
+        all_phoneme_ids = torch.LongTensor(phones1+phones2).to(device).unsqueeze(0)
+    else:
+        bert = bert2
+        all_phoneme_ids = torch.LongTensor(phones2).to(device).unsqueeze(0)
+
+    bert = bert.to(device).unsqueeze(0)
+    all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(device)
+    prompt = prompt_semantic.unsqueeze(0).to(device)
+    t2 = ttime()
+    with torch.no_grad():
+        # pred_semantic = t2s_model.model.infer(
+        pred_semantic, idx = t2s_model.model.infer_panel(
+            all_phoneme_ids,
+            all_phoneme_len,
+            None if ref_free else prompt,
+            bert,
+            # prompt_phone_len=ph_offset,
+            top_k=top_k,
+            top_p=top_p,
+            temperature=temperature,
+            early_stop_num=hz * max_sec,
+        )
+    t3 = ttime()
+    # print(pred_semantic.shape,idx)
+    pred_semantic = pred_semantic[:, -idx:].unsqueeze(
+        0
+    )  # .unsqueeze(0)#mq要多unsqueeze一次
+    refer = get_spepc(hps, ref_wav_path)  # .to(device)
+    if is_half == True:
+        refer = refer.half().to(device)
+    else:
+        refer = refer.to(device)
+    # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
+    audio = (
+        vq_model.decode(
+            pred_semantic, torch.LongTensor(phones2).to(device).unsqueeze(0), refer
+        )
+            .detach()
+            .cpu()
+            .numpy()[0, 0]
+    )  ###试试重建不带上prompt部分
+    max_audio=np.abs(audio).max()#简单防止16bit爆音
+    if max_audio>1:audio/=max_audio
+    t4 = ttime()
+    print("%.3f\t%.3f\t%.3f\t%.3f" % (t1 - t0, t2 - t1, t3 - t2, t4 - t3))
+    return audio
 
 def get_phones_and_bert(text,language):
     if language in {"en","all_zh","all_ja"}:
@@ -350,11 +361,15 @@ def get_phones_and_bert(text,language):
     elif language in {"zh", "ja","auto"}:
         textlist=[]
         langlist=[]
-        LangSegment.setfilters(["zh","ja","en"])
+        LangSegment.setfilters(["zh","ja","en","ko"])
         if language == "auto":
             for tmp in LangSegment.getTexts(text):
-                langlist.append(tmp["lang"])
-                textlist.append(tmp["text"])
+                if tmp["lang"] == "ko":
+                    langlist.append("zh")
+                    textlist.append(tmp["text"])
+                else:
+                    langlist.append(tmp["lang"])
+                    textlist.append(tmp["text"])
         else:
             for tmp in LangSegment.getTexts(text):
                 if tmp["lang"] == "en":
@@ -378,5 +393,69 @@ def get_phones_and_bert(text,language):
         bert = torch.cat(bert_list, dim=1)
         phones = sum(phones_list, [])
         norm_text = ''.join(norm_text_list)
-    
+
     return phones,bert.to(dtype),norm_text
+
+# from https://github.com/RVC-Boss/GPT-SoVITS/pull/448
+
+import tempfile, io, wave
+from pydub import AudioSegment
+
+# from https://huggingface.co/spaces/coqui/voice-chat-with-mistral/blob/main/app.py
+def wave_header_chunk(frame_input=b"", channels=1, sample_width=2, sample_rate=32000):
+    # This will create a wave header then append the frame input
+    # It should be first on a streaming wav file
+    # Other frames better should not have it (else you will hear some artifacts each chunk start)
+    wav_buf = io.BytesIO()
+    with wave.open(wav_buf, "wb") as vfout:
+        vfout.setnchannels(channels)
+        vfout.setsampwidth(sample_width)
+        vfout.setframerate(sample_rate)
+        vfout.writeframes(frame_input)
+
+    wav_buf.seek(0)
+    return wav_buf.read()
+
+
+def get_streaming_tts_wav(
+    ref_wav_path,
+    prompt_text,
+    prompt_language,
+    text,
+    text_language,
+    how_to_cut=i18n("不切"), 
+    top_k=20,
+    top_p=0.6,
+    temperature=0.6,
+    ref_free=False,
+    byte_stream=True,
+):
+    chunks = get_tts_wav(
+        ref_wav_path=ref_wav_path,
+        prompt_text=prompt_text,
+        prompt_language=prompt_language,
+        text=text,
+        text_language=text_language,
+        how_to_cut=how_to_cut,
+        top_k=top_k,
+        top_p=top_p,
+        temperature=temperature,
+        ref_free=ref_free,
+        stream=True,
+    )
+
+    if byte_stream:
+        yield wave_header_chunk()
+        for chunk in chunks:
+            assert isinstance(chunk, bytes), "Chunk must be bytes"
+            yield chunk
+    else:
+        # Send chunk files
+        i = 0
+        format = "wav"
+        for chunk in chunks:
+            i += 1
+            file = f"{tempfile.gettempdir()}/{i}.{format}"
+            segment = AudioSegment(chunk, frame_rate=32000, sample_width=2, channels=1)
+            segment.export(file, format=format)
+            yield file
