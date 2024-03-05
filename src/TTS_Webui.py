@@ -165,9 +165,10 @@ tts_port = 5000
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
 if os.path.exists(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
+        is_share = _config.get("is_share", "false").lower() == "true"
 
 default_character_info_url = f"http://127.0.0.1:{tts_port}/character_list"
 default_endpoint = f"http://127.0.0.1:{tts_port}/tts"
@@ -230,4 +231,4 @@ with gr.Blocks() as app:
     auto_emotion_checkbox.input(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
 
 
-app.launch(server_port=9867, show_error=True)
+app.launch(server_port=9867, show_error=True, share=is_share)
