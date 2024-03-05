@@ -25,7 +25,7 @@ def send_request(
     character_emotion,
     stream="False",
 ):
-    print(stream)
+    
     urlencoded_text = requests.utils.quote(text)
 
     # 使用Template填充变量
