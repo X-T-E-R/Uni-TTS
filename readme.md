@@ -5,6 +5,9 @@
 本项目不考虑模型的训练，仅考虑使用它们，试图提供一种方便快捷而舒适的方式让每个人都能享受到AI技术的发展
 
 你如果想要训练，请去装原版：[https://www.yuque.com/baicaigongchang1145haoyuangong/ib3g1e](https://www.yuque.com/baicaigongchang1145haoyuangong/ib3g1e)
+
+中文文档：https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp
+
 ### 使用环境建议
 `推荐使用/部署环境`：`Windows`
 `可选部署位置`：`Linux`( 正在实现 )
