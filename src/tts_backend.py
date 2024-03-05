@@ -57,7 +57,7 @@ def tts():
         top_p = float(data.get('top_p', 0.8))
         temperature = float(data.get('temperature', 0.8))
         stream = data.get('stream', 'False').lower() == 'true'
-        save_temp = data.get('save_temp', 'True').lower() == 'true'
+        save_temp = data.get('save_temp', 'False').lower() == 'true'
     except ValueError:
         return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
     character_emotion = data.get('character_emotion', 'default')
