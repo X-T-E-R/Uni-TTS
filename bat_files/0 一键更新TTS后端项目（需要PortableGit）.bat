@@ -3,7 +3,7 @@ CHCP 65001
 setlocal
 
 :: 设置 PortableGit 的路径
-set GIT_PATH=../PortableGit/bin
+set GIT_PATH=../../PortableGit/bin
 
 :: 设置需要同步的本地仓库路径
 set REPO_PATH=./
