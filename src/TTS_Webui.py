@@ -4,7 +4,7 @@ import json, os
 import requests
 import numpy as np
 from string import Template
-
+import pyaudio
 
 def load_character_emotions(character_name, characters_and_emotions):
     emotion_options = ["default"]
@@ -12,6 +12,9 @@ def load_character_emotions(character_name, characters_and_emotions):
 
     return gr.Dropdown(emotion_options, value="default")
 
+global p,streamAudio
+p = pyaudio.PyAudio()
+streamAudio = None
 
 def send_request(
     endpoint,
@@ -77,19 +80,45 @@ def send_request(
             # 返回给gradio
             return gr.Audio(save_path, type="filepath")
         else:
-            print(f"请求失败，状态码：{response.status_code}")
+            gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
             return gr.Audio(None, type="filepath")
-    # else:
-    # # 发送POST请求
-    # response = requests.post(final_endpoint, json=body, stream=True)
-    # # 检查请求是否成功
-    # if response.status_code == 200:
-    #     # 生成保存路径
-    #     save_path = f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+    else:
+    # 发送POST请求
+        response = requests.post(final_endpoint, json=body, stream=True)
+        # 检查请求是否成功
 
-    #     # 检查保存路径是否存在
-    #     if not os.path.exists("tmp_audio"):
-    #         os.makedirs("tmp_audio")
+        global p,streamAudio
+# 打开音频流
+        streamAudio = p.open(format=p.get_format_from_width(2),
+                        channels=1,
+                        rate=32000,
+                        output=True)
+
+        
+        response = requests.post(final_endpoint, json=body, stream=True)
+        if response.status_code == 200:
+            save_path = (
+                f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
+            )
+
+            # 检查保存路径是否存在
+            if not os.path.exists("tmp_audio"):
+                os.makedirs("tmp_audio")
+            with open(save_path, "wb") as f:    
+            # 读取数据块并播放
+                for data in response.iter_content(chunk_size=1024):
+                    f.write(data)
+                    if (streamAudio is not None) and (not streamAudio.is_stopped()) :
+                        streamAudio.write(data)
+
+            # 停止和关闭流
+            if streamAudio is not None:
+                streamAudio.stop_stream()
+            return gr.Audio(save_path, type="filepath")
+        else:
+            gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
+            return gr.Audio(None, type="filepath")
+            
 
     #     # 保存音频文件到本地
     #     with open(save_path, "wb") as f:
@@ -102,6 +131,12 @@ def send_request(
     #     print(f"请求失败，状态码：{response.status_code}")
     #     return gr.Audio(None, type="filepath",streaming=True,autoplay=True)
 
+
+def stopAudioPlay():
+    global streamAudio
+    if streamAudio is not None:
+        streamAudio.stop_stream()
+        streamAudio = None
 
 def get_characters_and_emotions(character_list_url):
     try:
@@ -155,8 +190,9 @@ def change_character_list(
     )
 
 
-def change_endpoint(endpoint):
-    return gr.Textbox(endpoint.rsplit("/", 1)[0] + "/character_list")
+def change_endpoint(url):
+    url = url.strip()
+    return gr.Textbox(f"{url}/tts"), gr.Textbox(f"{url}/character_list")
 
 
 tts_port = 5000
@@ -170,8 +206,9 @@ if os.path.exists(config_path):
         tts_port = _config.get("tts_port", 5000)
         is_share = _config.get("is_share", "false").lower() == "true"
 
-default_character_info_url = f"http://127.0.0.1:{tts_port}/character_list"
-default_endpoint = f"http://127.0.0.1:{tts_port}/tts"
+default_request_url = f"http://127.0.0.1:{tts_port}"
+default_character_info_url = f"{default_request_url}/character_list"
+default_endpoint = f"{default_request_url}/tts"
 default_endpoint_data = """{
     "method": "POST",
     "body": {
@@ -190,7 +227,7 @@ default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，
 
 
 with gr.Blocks() as app:
-    
+
     gr.HTML("""<p>使用前，请确认后端服务已启动。</p>
             <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）。</p>
             <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
@@ -199,7 +236,7 @@ with gr.Blocks() as app:
     with gr.Row():
         with gr.Column(scale=2):
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
-            
+
             cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
@@ -208,10 +245,14 @@ with gr.Blocks() as app:
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
         with gr.Column(scale=2):
-            endpoint = gr.Textbox(value=default_endpoint, label="Endpoint")
-            character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址（改上面的Endpoint会相应的变化）",interactive=False)
-            endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式")
-            endpoint.blur(change_endpoint, inputs=[endpoint],outputs=[character_list_url])
+            with gr.Tabs():
+                with gr.Tab(label="网址设置"):
+                    request_url_input = gr.Textbox(value=default_request_url, label="请求网址",interactive=True)
+                    endpoint = gr.Textbox(value=default_endpoint, label="Endpoint",interactive=False)
+                    character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址",interactive=False)
+                    request_url_input.blur(change_endpoint, inputs=[request_url_input],outputs=[endpoint,character_list_url])
+                with gr.Tab(label="json设置（一般不动）"):
+                    endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式",lines=10)
     with gr.Tabs():
         with gr.Tab(label="请求完整音频"):
             with gr.Row():
@@ -219,16 +260,82 @@ with gr.Blocks() as app:
                 audioRecieve = gr.Audio(None, label="音频输出",type="filepath",streaming=False)
         with gr.Tab(label="流式音频"):
             with gr.Row():
-                gr.Textbox("还在施工，敬请期待，API已支持",interactive=False)
+                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=True)
+                stopStreamButton = gr.Button("停止播放",variant="secondary")
             with gr.Row():
-                sendStreamRequest = gr.Button("发送请求",variant="primary",interactive=False)
-                audioStreamRecieve = gr.Audio(None, label="音频输出",streaming=True,autoplay=True,interactive=False)
-    sendRequest.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion, gr.State("False")], outputs=[audioRecieve])
-    sendStreamRequest.click(send_request, inputs=[endpoint, endpoint_data, text, cha_name, text_language, top_k, top_p, temperature, character_emotion, gr.State("True")], outputs=[audioStreamRecieve])
-    cha_name.change(load_character_emotions, inputs=[cha_name,characters_and_emotions],outputs=[character_emotion])
-    character_list_url.change(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
-    scan_character_list.click(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
-    auto_emotion_checkbox.input(change_character_list, inputs=[character_list_url,cha_name, auto_emotion_checkbox , character_emotion],outputs=[cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions])
+                audioStreamRecieve = gr.Audio(None, label="音频输出",interactive=False)
+    sendRequest.click(lambda: gr.update(interactive=False), None, [sendRequest]).then(
+        send_request,
+        inputs=[
+            endpoint,
+            endpoint_data,
+            text,
+            cha_name,
+            text_language,
+            top_k,
+            top_p,
+            temperature,
+            character_emotion,
+            gr.State("False"),
+        ],
+        outputs=[audioRecieve],
+    ).then(lambda: gr.update(interactive=True), None, [sendRequest])
+    sendStreamRequest.click(
+        lambda: gr.update(interactive=False), None, [sendStreamRequest]
+    ).then(
+        send_request,
+        inputs=[
+            endpoint,
+            endpoint_data,
+            text,
+            cha_name,
+            text_language,
+            top_k,
+            top_p,
+            temperature,
+            character_emotion,
+            gr.State("True"),
+        ],
+        outputs=[audioStreamRecieve],
+    ).then(
+        lambda: gr.update(interactive=True), None, [sendStreamRequest]
+    )
+    stopStreamButton.click(stopAudioPlay, inputs=[])
+    cha_name.change(
+        load_character_emotions,
+        inputs=[cha_name, characters_and_emotions],
+        outputs=[character_emotion],
+    )
+    character_list_url.change(
+        change_character_list,
+        inputs=[character_list_url, cha_name, auto_emotion_checkbox, character_emotion],
+        outputs=[
+            cha_name,
+            auto_emotion_checkbox,
+            character_emotion,
+            characters_and_emotions,
+        ],
+    )
+    scan_character_list.click(
+        change_character_list,
+        inputs=[character_list_url, cha_name, auto_emotion_checkbox, character_emotion],
+        outputs=[
+            cha_name,
+            auto_emotion_checkbox,
+            character_emotion,
+            characters_and_emotions,
+        ],
+    )
+    auto_emotion_checkbox.input(
+        change_character_list,
+        inputs=[character_list_url, cha_name, auto_emotion_checkbox, character_emotion],
+        outputs=[
+            cha_name,
+            auto_emotion_checkbox,
+            character_emotion,
+            characters_and_emotions,
+        ],
+    )
 
 
 app.launch(server_port=9867, show_error=True, share=is_share)

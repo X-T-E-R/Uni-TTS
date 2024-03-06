@@ -29,3 +29,4 @@ jieba_fast
 jieba
 LangSegment>=0.2.3
 Faster_Whisper
+pyaudio
