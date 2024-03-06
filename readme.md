@@ -1,3 +1,5 @@
+## 中文说明
+
 这是一个基于[GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS)开发的 推理特化插件
 请见项目：https://github.com/X-T-E-R/TTS-for-GPT-soVITS
 
@@ -10,6 +12,17 @@
 前端程序：`src/TTS_Webui.py`
 
 模型管理界面：`src/Character_Manager.py`
+
+
+
+有关于文档：主要的文档都放在了语雀上，中文用户请直接看语雀，~~其它用户请等待我写文档并且在代码中使用i18n~~
+
+仅导出了几个核心文档：
+[API接口文档]( ./docs/cn/API接口文档.md) [模型文件导入方式]( ./docs/cn/模型文件导入方式.md) [项目说明]( ./docs/cn/项目说明.md) 
+
+
+
+## 英文说明
 
 This is a reasoning-specialized plugin developed based on GPT-soVITS. For more information, please visit the project at: https://github.com/X-T-E-R/TTS-for-GPT-soVITS
 
