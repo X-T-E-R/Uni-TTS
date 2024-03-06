@@ -27,6 +27,6 @@ PyYAML
 psutil
 jieba_fast
 jieba
-LangSegment>=0.2.3
+LangSegment>=0.2.5
 Faster_Whisper
 pyaudio
