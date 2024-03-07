@@ -6,7 +6,7 @@ setlocal
 set GIT_PATH=../PortableGit/bin
 
 :: 设置需要同步的本地仓库路径
-set REPO_PATH=./
+set REPO_PATH=../
 
 :: 添加 PortableGit 到 PATH，以便可以执行 git 命令
 set PATH=%GIT_PATH%;%PATH%
@@ -15,7 +15,7 @@ set PATH=%GIT_PATH%;%PATH%
 cd /d %REPO_PATH%
 
 :: 执行 git pull 更新本地仓库
-git fetch https://github.com/X-T-E-R/TTS-for-GPT-soVITS.git main
+git fetch https://github.com/X-T-E-R/TTS-for-GPT-soVITS.git plug_in
 git reset --hard FETCH_HEAD
 
 echo.

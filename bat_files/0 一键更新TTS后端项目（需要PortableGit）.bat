@@ -16,7 +16,7 @@ cd /d %REPO_PATH%
 
 :: 执行 git pull 更新本地仓库
 git stash
-git pull https://github.com/X-T-E-R/TTS-for-GPT-soVITS.git main
+git pull https://github.com/X-T-E-R/TTS-for-GPT-soVITS.git plug_in
 
 echo.
 echo 更新完成！
