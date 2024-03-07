@@ -88,7 +88,7 @@ def send_request(
         # 检查请求是否成功
 
         global p,streamAudio
-# 打开音频流
+        # 打开音频流
         streamAudio = p.open(format=p.get_format_from_width(2),
                         channels=1,
                         rate=32000,
@@ -118,18 +118,6 @@ def send_request(
         else:
             gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
             return gr.Audio(None, type="filepath")
-            
-
-    #     # 保存音频文件到本地
-    #     with open(save_path, "wb") as f:
-    #         for chunk in response.iter_content():
-    #             if chunk:
-    #                 f.write(chunk)
-    #                 yield gr.Audio(np.frombuffer(chunk, dtype=np.int16),streaming=True,autoplay=True,type="numpy")
-
-    # else:
-    #     print(f"请求失败，状态码：{response.status_code}")
-    #     return gr.Audio(None, type="filepath",streaming=True,autoplay=True)
 
 
 def stopAudioPlay():
