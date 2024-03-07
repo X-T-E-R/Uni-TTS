@@ -26,7 +26,7 @@ if "_CUDA_VISIBLE_DEVICES" in os.environ:
 
 is_half = eval(os.environ.get("is_half", "True"))
 
-import gradio as gr
+
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 import numpy as np
 import librosa, torch
