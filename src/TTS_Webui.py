@@ -4,7 +4,7 @@ import json, os
 import requests
 import numpy as np
 from string import Template
-import pyaudio
+import pyaudio,wave
 
 def load_character_emotions(character_name, characters_and_emotions):
     emotion_options = ["default"]
@@ -100,17 +100,26 @@ def send_request(
             save_path = (
                 f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
             )
+            
+            # 音频参数
+            channels = 1  # 单声道
+            sampwidth = 2  # 采样位宽，2字节（16位）
+            framerate = 32000  # 采样率，32000 Hz
 
             # 检查保存路径是否存在
             if not os.path.exists("tmp_audio"):
                 os.makedirs("tmp_audio")
-            with open(save_path, "wb") as f:    
-            # 读取数据块并播放
+           
+            # 打开一个新的 wave 文件，准备写入
+            with wave.open(save_path, 'wb') as wf:
+                wf.setnchannels(channels)  # 设置声道数
+                wf.setsampwidth(sampwidth)  # 设置采样位宽
+                wf.setframerate(framerate)  # 设置采样率
                 for data in response.iter_content(chunk_size=1024):
-                    f.write(data)
+                    wf.writeframes(data)
                     if (streamAudio is not None) and (not streamAudio.is_stopped()) :
                         streamAudio.write(data)
-
+           
             # 停止和关闭流
             if streamAudio is not None:
                 streamAudio.stop_stream()
