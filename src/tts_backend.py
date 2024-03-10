@@ -1,3 +1,6 @@
+backend_version = "2.1.1"
+print(f"Backend version: {backend_version}")
+
 import soundfile as sf
 from flask import Flask, request, Response, jsonify, stream_with_context,send_file
 import io, os
