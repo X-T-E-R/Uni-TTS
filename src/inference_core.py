@@ -109,7 +109,7 @@ def inference(text, text_lang,
         "split_bucket":split_bucket,
         "return_fragment":return_fragment,
     }
-    yield next(tts_pipline.run(inputs))
+    return tts_pipline.run(inputs)
 
 # from https://github.com/RVC-Boss/GPT-SoVITS/pull/448
 
@@ -140,15 +140,19 @@ def get_streaming_tts_wav(params):
         for sr, chunk in chunks:
             if chunk is not None:
                 chunk = chunk.tobytes()
-                assert isinstance(chunk, bytes), "Chunk must be bytes"
                 yield chunk
+            else:
+                print("None chunk")
+                pass
+
     else:
+        pass
         # Send chunk files
-        i = 0
-        format = "wav"
-        for chunk in chunks:
-            i += 1
-            file = f"{tempfile.gettempdir()}/{i}.{format}"
-            segment = AudioSegment(chunk, frame_rate=32000, sample_width=2, channels=1)
-            segment.export(file, format=format)
-            yield file
+        # i = 0
+        # format = "wav"
+        # for chunk in chunks:
+        #     i += 1
+        #     file = f"{tempfile.gettempdir()}/{i}.{format}"
+        #     segment = AudioSegment(chunk, frame_rate=32000, sample_width=2, channels=1)
+        #     segment.export(file, format=format)
+        #     yield file
