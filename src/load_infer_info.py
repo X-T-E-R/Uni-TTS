@@ -1,7 +1,8 @@
 global character_name
 
-import os, json
-
+import os, json, sys
+now_dir = os.getcwd()
+sys.path.append(now_dir)
 from inference_core import inference, tts_pipline, get_streaming_tts_wav
 from TTS_infer_pack.TTS import TTS, TTS_Config
 
