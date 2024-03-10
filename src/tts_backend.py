@@ -53,14 +53,28 @@ def tts():
 
     text_language = data.get('text_language', '多语种混合')
     try:
+        batch_size = int(data.get('batch_size', 1))
+        speed_factor = float(data.get('speed_factor', 1.0))
         top_k = int(data.get('top_k', 6))
         top_p = float(data.get('top_p', 0.8))
         temperature = float(data.get('temperature', 0.8))
-        stream = data.get('stream', 'False').lower() == 'true'
-        save_temp = data.get('save_temp', 'False').lower() == 'true'
     except ValueError:
         return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
+    stream = data.get('stream', 'False').lower() == 'true'
+    save_temp = data.get('save_temp', 'False').lower() == 'true'
     character_emotion = data.get('character_emotion', 'default')
+    
+    params = {
+        "text": text,
+        "text_language": text_language,
+        "batch_size": batch_size,
+        "speed_factor": speed_factor,
+        "top_k": top_k,
+        "top_p": top_p,
+        "temperature": temperature,
+        "character_emotion": character_emotion,
+        "stream": stream
+    }
 
     request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name)
     if stream == False:
@@ -68,7 +82,7 @@ def tts():
             if request_hash in temp_files:
                 return send_file(temp_files[request_hash], mimetype='audio/wav')
             else:
-                gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+                gen = get_wav_from_text_api(**params)
                 sampling_rate, audio_data = next(gen)
                 temp_file_path = tempfile.mktemp(suffix='.wav')
                 with open(temp_file_path, 'wb') as temp_file:
@@ -76,14 +90,14 @@ def tts():
                 temp_files[request_hash] = temp_file_path
                 return send_file(temp_file_path, mimetype='audio/wav')
         else:
-            gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+            gen = get_wav_from_text_api(**params)
             sampling_rate, audio_data = next(gen)
             wav = io.BytesIO()
             sf.write(wav, audio_data, sampling_rate, format="wav")
             wav.seek(0)
             return Response(wav, mimetype='audio/wav')
     else:
-        gen = get_wav_from_text_api(text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, character_emotion=character_emotion, stream=stream)
+        gen = get_wav_from_text_api(**params)
         return Response(stream_with_context(gen),  mimetype='audio/wav')
 
 

@@ -22,39 +22,35 @@ def send_request(
     text,
     cha_name,
     text_language,
+    batch_size,
+    speed_factor,
     top_k,
     top_p,
     temperature,
     character_emotion,
     stream="False",
 ):
-    
     urlencoded_text = requests.utils.quote(text)
 
     # 使用Template填充变量
+    params = {
+        "chaName": cha_name,
+        "speakText": urlencoded_text,
+        "textLanguage": text_language,
+        "batch_size": batch_size,
+        "speed_factor": speed_factor,
+        "topK": top_k,
+        "topP": top_p,
+        "temperature": temperature,
+        "characterEmotion": character_emotion,
+        "stream": stream,
+    }
+
     endpoint_template = Template(endpoint)
-    final_endpoint = endpoint_template.substitute(
-        chaName=cha_name,
-        speakText=urlencoded_text,
-        textLanguage=text_language,
-        topK=top_k,
-        topP=top_p,
-        temperature=temperature,
-        characterEmotion=character_emotion,
-        stream=stream,
-    )
+    final_endpoint = endpoint_template.substitute(**params)
 
     endpoint_data_template = Template(endpoint_data)
-    filled_json_str = endpoint_data_template.substitute(
-        chaName=cha_name,
-        speakText=urlencoded_text,
-        textLanguage=text_language,
-        topK=top_k,
-        topP=top_p,
-        temperature=temperature,
-        characterEmotion=character_emotion,
-        stream=stream,
-    )
+    filled_json_str = endpoint_data_template.substitute(**params)
     # 解析填充后的JSON字符串
     request_data = json.loads(filled_json_str)
     body = request_data["body"]
@@ -83,7 +79,7 @@ def send_request(
             gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
             return gr.Audio(None, type="filepath")
     else:
-    # 发送POST请求
+        # 发送POST请求
         response = requests.post(final_endpoint, json=body, stream=True)
         # 检查请求是否成功
 
@@ -94,13 +90,12 @@ def send_request(
                         rate=32000,
                         output=True)
 
-        
         response = requests.post(final_endpoint, json=body, stream=True)
         if response.status_code == 200:
             save_path = (
                 f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
             )
-            
+
             # 音频参数
             channels = 1  # 单声道
             sampwidth = 2  # 采样位宽，2字节（16位）
@@ -109,7 +104,7 @@ def send_request(
             # 检查保存路径是否存在
             if not os.path.exists("tmp_audio"):
                 os.makedirs("tmp_audio")
-           
+
             # 打开一个新的 wave 文件，准备写入
             with wave.open(save_path, 'wb') as wf:
                 wf.setnchannels(channels)  # 设置声道数
@@ -119,7 +114,7 @@ def send_request(
                     wf.writeframes(data)
                     if (streamAudio is not None) and (not streamAudio.is_stopped()) :
                         streamAudio.write(data)
-           
+
             # 停止和关闭流
             if streamAudio is not None:
                 streamAudio.stop_stream()
@@ -213,6 +208,8 @@ default_endpoint_data = """{
         "character_emotion": "${characterEmotion}",
         "text": "${speakText}",
         "text_language": "${textLanguage}",
+        "batch_size": ${batch_size},
+        "speed_factor": ${speed_factor},
         "top_k": ${topK},
         "top_p": ${topP},
         "temperature": ${temperature},
@@ -233,11 +230,12 @@ with gr.Blocks() as app:
     with gr.Row():
         with gr.Column(scale=2):
             text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
-
             cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
         with gr.Column(scale=1):    
+            speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05)
+            batch_size = gr.Slider(minimum=1, maximum=20, value=10, label="batch_size，电脑牛逼就设置大一点，爆显存就设置小一点",step=1)
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
@@ -257,7 +255,9 @@ with gr.Blocks() as app:
                 audioRecieve = gr.Audio(None, label="音频输出",type="filepath",streaming=False)
         with gr.Tab(label="流式音频"):
             with gr.Row():
-                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=True)
+                gr.Text("还在合并功能，暂时封印。",interactive=False)
+            with gr.Row():
+                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=False)
                 stopStreamButton = gr.Button("停止播放",variant="secondary")
             with gr.Row():
                 audioStreamRecieve = gr.Audio(None, label="音频输出",interactive=False)
@@ -269,6 +269,8 @@ with gr.Blocks() as app:
             text,
             cha_name,
             text_language,
+            batch_size,
+            speed_factor,
             top_k,
             top_p,
             temperature,
@@ -287,6 +289,8 @@ with gr.Blocks() as app:
             text,
             cha_name,
             text_language,
+            batch_size,
+            speed_factor,
             top_k,
             top_p,
             temperature,
