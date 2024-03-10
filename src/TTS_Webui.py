@@ -209,7 +209,7 @@ default_endpoint_data = """{
         "text": "${speakText}",
         "text_language": "${textLanguage}",
         "batch_size": ${batch_size},
-        "speed_factor": ${speed_factor},
+        "speed": ${speed_factor},
         "top_k": ${topK},
         "top_p": ${topP},
         "temperature": ${temperature},

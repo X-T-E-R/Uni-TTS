@@ -57,7 +57,7 @@ def tts():
     text_language = data.get('text_language', '多语种混合')
     try:
         batch_size = int(data.get('batch_size', 1))
-        speed_factor = float(data.get('speed_factor', 1.0))
+        speed_factor = float(data.get('speed', 1.0))
         top_k = int(data.get('top_k', 6))
         top_p = float(data.get('top_p', 0.8))
         temperature = float(data.get('temperature', 0.8))
