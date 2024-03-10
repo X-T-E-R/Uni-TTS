@@ -1,6 +1,7 @@
 import os, sys
 now_dir = os.getcwd()
 sys.path.append(now_dir)
+sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
 
 import os, re, logging, json
 logging.getLogger("markdown_it").setLevel(logging.ERROR)
