@@ -68,6 +68,7 @@ cut_method = {
     i18n("按中文句号。切"): "cut3",
     i18n("按英文句号.切"): "cut4",
     i18n("按标点符号切"): "cut5",
+    i18n("智能切分"): "auto_cut",
 }
 
 tts_config = TTS_Config("GPT_SoVITS/configs/tts_infer.yaml")

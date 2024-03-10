@@ -256,7 +256,7 @@ def get_wav_from_text_api(
         "top_k": top_k,
         "top_p": top_p,
         "temperature": temperature,
-        "text_split_method": "按标点符号切", 
+        "text_split_method": "智能切分", 
         "batch_size": batch_size,
         "speed_factor": speed_factor,
         "ref_text_free": ref_free,
