@@ -88,12 +88,18 @@ def inference(text, text_lang,
               split_bucket,
               return_fragment
               ):
+    try:
+        text_lang = dict_language[text_lang]
+        prompt_lang = dict_language[prompt_lang]
+    except:
+        text_lang = "auto"
+        prompt_lang = "auto"
     inputs={
         "text": text,
-        "text_lang": dict_language[text_lang],
+        "text_lang": text_lang,
         "ref_audio_path": ref_audio_path,
         "prompt_text": prompt_text if not ref_text_free else "",
-        "prompt_lang": dict_language[prompt_lang],
+        "prompt_lang": prompt_lang,
         "top_k": top_k,
         "top_p": top_p,
         "temperature": temperature,
