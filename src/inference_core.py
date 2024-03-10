@@ -21,8 +21,6 @@ is_half = eval(os.environ.get("is_half", "True"))
 
 
 from TTS_infer_pack.TTS import TTS, TTS_Config
-from TTS_infer_pack.text_segmentation_method import cut1, cut2, cut3, cut4, cut5
-from TTS_infer_pack.text_segmentation_method import get_method
 from tools.i18n.i18n import I18nAuto
 
 i18n = I18nAuto()
@@ -131,9 +129,11 @@ def get_streaming_tts_wav(params):
     byte_stream = True
     if byte_stream:
         yield wave_header_chunk()
-        for chunk in chunks:
-            assert isinstance(chunk, bytes), "Chunk must be bytes"
-            yield chunk
+        for sr, chunk in chunks:
+            if chunk is not None:
+                chunk = chunk.tobytes()
+                assert isinstance(chunk, bytes), "Chunk must be bytes"
+                yield chunk
     else:
         # Send chunk files
         i = 0

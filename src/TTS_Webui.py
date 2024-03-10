@@ -255,9 +255,7 @@ with gr.Blocks() as app:
                 audioRecieve = gr.Audio(None, label="音频输出",type="filepath",streaming=False)
         with gr.Tab(label="流式音频"):
             with gr.Row():
-                gr.Text("还在合并功能，暂时封印。",interactive=False)
-            with gr.Row():
-                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=False)
+                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=True)
                 stopStreamButton = gr.Button("停止播放",variant="secondary")
             with gr.Row():
                 audioStreamRecieve = gr.Audio(None, label="音频输出",interactive=False)
