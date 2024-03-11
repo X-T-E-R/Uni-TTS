@@ -186,6 +186,17 @@ def change_endpoint(url):
     url = url.strip()
     return gr.Textbox(f"{url}/tts"), gr.Textbox(f"{url}/character_list")
 
+def change_batch_size(batch_size):
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            _config = json.load(f)
+        with open(config_path, "w", encoding="utf-8") as f:
+            _config["batch_size"] = batch_size
+            json.dump(_config, f, ensure_ascii=False, indent=4)
+    except:
+        pass
+    return
+
 
 tts_port = 5000
 
@@ -196,6 +207,7 @@ if os.path.exists(config_path):
     with open(config_path, "r", encoding="utf-8") as f:
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
+        default_batch_size = _config.get("batch_size", 10)
         is_share = _config.get("is_share", "false").lower() == "true"
         enable_auth = _config.get("enable_auth", "false").lower() == "true"
         users = _config.get("user", {})
@@ -230,7 +242,7 @@ default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，
 
 with gr.Blocks() as app:
 
-    gr.HTML("""<p>使用前，请确认后端服务已启动。</p>
+    gr.HTML("""<p>当前版本：2.1.4 240312 使用前，请确认后端服务已启动。</p>
             <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）。</p>
             <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
     with gr.Row():
@@ -243,10 +255,11 @@ with gr.Blocks() as app:
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
         with gr.Column(scale=1):    
             speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05)
-            batch_size = gr.Slider(minimum=1, maximum=20, value=10, label="batch_size，电脑牛逼就设置大一点，爆显存就设置小一点",step=1)
+            batch_size = gr.Slider(minimum=1, maximum=30, value=default_batch_size, label="batch_size，电脑牛逼就设置大一点，爆显存就设置小一点",step=1)
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
+            batch_size.release(change_batch_size, inputs=[batch_size])
         with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab(label="网址设置"):

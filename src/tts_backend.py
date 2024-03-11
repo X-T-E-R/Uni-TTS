@@ -40,6 +40,7 @@ if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
+        default_batch_size = _config.get("batch_size", 1)
         enable_auth = _config.get("enable_auth", "false").lower() == "true"
         if enable_auth:
             print("启用了身份验证")
@@ -84,7 +85,7 @@ def tts():
 
     text_language = data.get('text_language', '多语种混合')
     try:
-        batch_size = int(data.get('batch_size', 1))
+        batch_size = int(data.get('batch_size', default_batch_size))
         speed_factor = float(data.get('speed', 1.0))
         top_k = int(data.get('top_k', 6))
         top_p = float(data.get('top_p', 0.8))
