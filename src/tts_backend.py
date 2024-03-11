@@ -40,8 +40,9 @@ if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
-        enable_auth = _config.get("enable_auth", False)
+        enable_auth = _config.get("enable_auth", "false").lower() == "true"
         if enable_auth:
+            print("启用了身份验证")
             USERS = _config.get("user", {})
 
 @auth.verify_password
