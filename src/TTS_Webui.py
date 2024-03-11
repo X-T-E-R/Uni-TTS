@@ -197,6 +197,14 @@ if os.path.exists(config_path):
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
         is_share = _config.get("is_share", "false").lower() == "true"
+        enable_auth = _config.get("enable_auth", "false").lower() == "true"
+        users = _config.get("user", {})
+        try:
+            default_username = list(users.keys())[0]
+            default_password = users[default_username]
+        except:
+            default_username = "admin"
+            default_password = "admin123"
 
 default_request_url = f"http://127.0.0.1:{tts_port}"
 default_character_info_url = f"{default_request_url}/character_list"
@@ -246,6 +254,10 @@ with gr.Blocks() as app:
                     endpoint = gr.Textbox(value=default_endpoint, label="Endpoint",interactive=False)
                     character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址",interactive=False)
                     request_url_input.blur(change_endpoint, inputs=[request_url_input],outputs=[endpoint,character_list_url])
+                with gr.Tab(label="认证设置"):
+                    
+                    username=gr.Textbox(value=default_username, label="用户名",interactive=False)
+                    password=gr.Textbox(value=default_password, label="密码",interactive=False)
                 with gr.Tab(label="json设置（一般不动）"):
                     endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式",lines=10)
     with gr.Tabs():
