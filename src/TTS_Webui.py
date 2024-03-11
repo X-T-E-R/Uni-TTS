@@ -255,7 +255,7 @@ with gr.Blocks() as app:
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
         with gr.Column(scale=1):    
             speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05)
-            batch_size = gr.Slider(minimum=1, maximum=30, value=default_batch_size, label="batch_size，1代表不并行，越大越快，但是越可能爆",step=1)
+            batch_size = gr.Slider(minimum=1, maximum=200, value=default_batch_size, label="batch_size，1代表不并行，越大越快，但是越可能爆",step=1)
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
