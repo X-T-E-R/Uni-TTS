@@ -1,4 +1,4 @@
-backend_version = "2.1.2"
+backend_version = "2.1.3 240312"
 print(f"Backend version: {backend_version}")
 
 import soundfile as sf
