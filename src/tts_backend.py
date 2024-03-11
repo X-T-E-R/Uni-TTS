@@ -3,10 +3,11 @@ print(f"Backend version: {backend_version}")
 
 import soundfile as sf
 from flask import Flask, request, Response, jsonify, stream_with_context,send_file
+from flask_httpauth import HTTPBasicAuth
 import io, os
 import urllib.parse,sys
 import tempfile
-import hashlib
+import hashlib, json
 
 # 将当前文件所在的目录添加到 sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -26,12 +27,38 @@ def generate_file_hash(*args):
         hash_object.update(str(arg).encode())
     return hash_object.hexdigest()
 
+
+app = Flask(__name__)
+auth = HTTPBasicAuth()
+
+# 从配置文件读取配置
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+enable_auth = False
+USERS = {}
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        _config = json.load(f)
+        tts_port = _config.get("tts_port", 5000)
+        enable_auth = _config.get("enable_auth", False)
+        if enable_auth:
+            USERS = _config.get("user", {})
+
+@auth.verify_password
+def verify_password(username, password):
+    if not enable_auth:
+        return True  # 如果没有启用验证，则允许访问
+    return USERS.get(username) == password
+
+
 @app.route('/character_list', methods=['GET'])
+@auth.login_required
 def character_list():
     return jsonify(update_character_info()['characters_and_emotions'])
 
 
 @app.route('/tts', methods=['GET', 'POST'])
+@auth.login_required
 def tts():
     global character_name
     global models_path
@@ -104,16 +131,5 @@ def tts():
         return Response(stream_with_context(gen),  mimetype='audio/wav')
 
 
-import json
-tts_port = 5000
-
-# 取得模型文件夹路径
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-
-if os.path.exists(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        _config = json.load(f)
-        tts_port = _config.get("tts_port", 5000)
-
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=tts_port)
+    app.run( host='0.0.0.0', port=tts_port)
