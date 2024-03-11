@@ -45,7 +45,7 @@ if os.path.exists(config_path):
             if device == "cpu":
                 is_half = False
         if _config.get("half_precision", "auto") != "auto":
-            is_half = _config["half_precision"]
+            is_half = _config["half_precision"].lower() == "true"
 
         
 print(f"device: {device}, is_half: {is_half}")
