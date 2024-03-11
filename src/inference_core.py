@@ -72,7 +72,7 @@ cut_method = {
     i18n("智能切分"): "auto_cut",
 }
 
-tts_config = TTS_Config("GPT_SoVITS/configs/tts_infer.yaml")
+tts_config = TTS_Config("")
 tts_config.device = device
 tts_config.is_half = is_half
 tts_pipline = TTS(tts_config)
