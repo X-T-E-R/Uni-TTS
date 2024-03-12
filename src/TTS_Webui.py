@@ -4,7 +4,7 @@ import json, os
 import requests
 import numpy as np
 from string import Template
-import pyaudio,wave
+import pyaudio, wave
 
 tts_port = 5000
 self_version = "2.1.5 240313"
@@ -28,15 +28,18 @@ if os.path.exists(config_path):
             default_username = "admin"
             default_password = "admin123"
 
+
 def load_character_emotions(character_name, characters_and_emotions):
     emotion_options = ["default"]
     emotion_options = characters_and_emotions.get(character_name, ["default"])
 
     return gr.Dropdown(emotion_options, value="default")
 
-global p,streamAudio
+
+global p, streamAudio
 p = pyaudio.PyAudio()
 streamAudio = None
+
 
 def send_request(
     endpoint,
@@ -98,19 +101,20 @@ def send_request(
             # 返回给gradio
             return gr.Audio(save_path, type="filepath")
         else:
-            gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
+            gr.Warning(
+                f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}"
+            )
             return gr.Audio(None, type="filepath")
     else:
         # 发送POST请求
         response = requests.post(final_endpoint, json=body, stream=True)
         # 检查请求是否成功
 
-        global p,streamAudio
+        global p, streamAudio
         # 打开音频流
-        streamAudio = p.open(format=p.get_format_from_width(2),
-                        channels=1,
-                        rate=32000,
-                        output=True)
+        streamAudio = p.open(
+            format=p.get_format_from_width(2), channels=1, rate=32000, output=True
+        )
 
         response = requests.post(final_endpoint, json=body, stream=True)
         if response.status_code == 200:
@@ -128,13 +132,13 @@ def send_request(
                 os.makedirs("tmp_audio")
 
             # 打开一个新的 wave 文件，准备写入
-            with wave.open(save_path, 'wb') as wf:
+            with wave.open(save_path, "wb") as wf:
                 wf.setnchannels(channels)  # 设置声道数
                 wf.setsampwidth(sampwidth)  # 设置采样位宽
                 wf.setframerate(framerate)  # 设置采样率
                 for data in response.iter_content(chunk_size=1024):
                     wf.writeframes(data)
-                    if (streamAudio is not None) and (not streamAudio.is_stopped()) :
+                    if (streamAudio is not None) and (not streamAudio.is_stopped()):
                         streamAudio.write(data)
 
             # 停止和关闭流
@@ -142,7 +146,9 @@ def send_request(
                 streamAudio.stop_stream()
             return gr.Audio(save_path, type="filepath")
         else:
-            gr.Warning(f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}")
+            gr.Warning(
+                f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}"
+            )
             return gr.Audio(None, type="filepath")
 
 
@@ -151,6 +157,7 @@ def stopAudioPlay():
     if streamAudio is not None:
         streamAudio.stop_stream()
         streamAudio = None
+
 
 def get_characters_and_emotions(character_list_url):
     try:
@@ -208,6 +215,7 @@ def change_endpoint(url):
     url = url.strip()
     return gr.Textbox(f"{url}/tts"), gr.Textbox(f"{url}/character_list")
 
+
 def change_batch_size(batch_size):
     try:
         with open(config_path, "r", encoding="utf-8") as f:
@@ -218,7 +226,6 @@ def change_batch_size(batch_size):
     except:
         pass
     return
-
 
 
 default_request_url = f"http://127.0.0.1:{tts_port}"
@@ -240,53 +247,104 @@ default_endpoint_data = """{
         "save_temp": "False"
     }
 }"""
-default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
+default_text = "我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
 
 
 with gr.Blocks() as app:
 
-    gr.HTML(f"""<p>这是一个由<a href="https://space.bilibili.com/66633770">XTer</a>提供的推理特化包，当前版本： <a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a> 使用前，请确认后端服务已启动。</p>
+    gr.HTML(
+        f"""<p>这是一个由<a href="https://space.bilibili.com/66633770">XTer</a>提供的推理特化包，当前版本： <a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a> 使用前，请确认后端服务已启动。</p>
             <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。</p>
-            <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
+            <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>"""
+    )
     with gr.Row():
-        text = gr.Textbox(value=default_text, label="输入文本",interactive=True,lines=8)
+        text = gr.Textbox(
+            value=default_text, label="输入文本", interactive=True, lines=8
+        )
     with gr.Row():
         with gr.Column(scale=2):
-            text_language = gr.Dropdown(["多语种混合", "中文", "英文","日文","中英混合","日英混合"], value="多语种混合", label="文本语言")
-            cha_name, auto_emotion_checkbox , character_emotion, characters_and_emotions_ = change_character_list(default_character_info_url)
+            text_language = gr.Dropdown(
+                ["多语种混合", "中文", "英文", "日文", "中英混合", "日英混合"],
+                value="多语种混合",
+                label="文本语言",
+            )
+            (
+                cha_name,
+                auto_emotion_checkbox,
+                character_emotion,
+                characters_and_emotions_,
+            ) = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
-            scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
-        with gr.Column(scale=1):    
-            speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05,visible=not is_classic)
-            batch_size = gr.Slider(minimum=1, maximum=35, value=default_batch_size, label="batch_size，1代表不并行，越大越快，但是越可能爆",step=1,visible= not is_classic)
-            top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
+            scan_character_list = gr.Button("重新扫描人物列表", variant="secondary")
+        with gr.Column(scale=1):
+            speed_factor = gr.Slider(
+                minimum=0.25,
+                maximum=4,
+                value=1,
+                label="语速",
+                step=0.05,
+                visible=not is_classic,
+            )
+            batch_size = gr.Slider(
+                minimum=1,
+                maximum=35,
+                value=default_batch_size,
+                label="batch_size，1代表不并行，越大越快，但是越可能爆",
+                step=1,
+                visible=not is_classic,
+            )
+            top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K", step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
-            temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")
+            temperature = gr.Slider(
+                minimum=0, maximum=1, value=0.8, label="Temperature"
+            )
             batch_size.release(change_batch_size, inputs=[batch_size])
         with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab(label="网址设置"):
-                    request_url_input = gr.Textbox(value=default_request_url, label="请求网址",interactive=True)
-                    endpoint = gr.Textbox(value=default_endpoint, label="Endpoint",interactive=False)
-                    character_list_url = gr.Textbox(value=default_character_info_url, label="人物情感列表网址",interactive=False)
-                    request_url_input.blur(change_endpoint, inputs=[request_url_input],outputs=[endpoint,character_list_url])
+                    request_url_input = gr.Textbox(
+                        value=default_request_url, label="请求网址", interactive=True
+                    )
+                    endpoint = gr.Textbox(
+                        value=default_endpoint, label="Endpoint", interactive=False
+                    )
+                    character_list_url = gr.Textbox(
+                        value=default_character_info_url,
+                        label="人物情感列表网址",
+                        interactive=False,
+                    )
+                    request_url_input.blur(
+                        change_endpoint,
+                        inputs=[request_url_input],
+                        outputs=[endpoint, character_list_url],
+                    )
                 with gr.Tab(label="认证设置"):
-                    
-                    username=gr.Textbox(value=default_username, label="用户名",interactive=False)
-                    password=gr.Textbox(value=default_password, label="密码",interactive=False)
+
+                    username = gr.Textbox(
+                        value=default_username, label="用户名", interactive=False
+                    )
+                    password = gr.Textbox(
+                        value=default_password, label="密码", interactive=False
+                    )
                 with gr.Tab(label="json设置（一般不动）"):
-                    endpoint_data = gr.Textbox(value=default_endpoint_data, label="发送json格式",lines=10)
+                    endpoint_data = gr.Textbox(
+                        value=default_endpoint_data, label="发送json格式", lines=10
+                    )
     with gr.Tabs():
         with gr.Tab(label="请求完整音频"):
             with gr.Row():
-                sendRequest = gr.Button("发送请求",variant="primary")
-                audioRecieve = gr.Audio(None, label="音频输出",type="filepath",streaming=False)
+                sendRequest = gr.Button("发送请求", variant="primary")
+                audioRecieve = gr.Audio(
+                    None, label="音频输出", type="filepath", streaming=False
+                )
         with gr.Tab(label="流式音频"):
             with gr.Row():
-                sendStreamRequest = gr.Button("发送并开始播放",variant="primary",interactive=True)
-                stopStreamButton = gr.Button("停止播放",variant="secondary")
+                sendStreamRequest = gr.Button(
+                    "发送并开始播放", variant="primary", interactive=True
+                )
+                stopStreamButton = gr.Button("停止播放", variant="secondary")
             with gr.Row():
-                audioStreamRecieve = gr.Audio(None, label="音频输出",interactive=False)
+                audioStreamRecieve = gr.Audio(None, label="音频输出", interactive=False)
     sendRequest.click(lambda: gr.update(interactive=False), None, [sendRequest]).then(
         send_request,
         inputs=[
@@ -365,4 +423,4 @@ with gr.Blocks() as app:
     )
 
 
-app.launch(server_port=9867, show_error=True, share=is_share)
+app.launch(server_port=9867, show_error=True, share=is_share, inbrowser=True)
