@@ -6,6 +6,27 @@ import numpy as np
 from string import Template
 import pyaudio,wave
 
+tts_port = 5000
+
+# 取得模型文件夹路径
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+
+if os.path.exists(config_path):
+    with open(config_path, "r", encoding="utf-8") as f:
+        _config = json.load(f)
+        tts_port = _config.get("tts_port", 5000)
+        default_batch_size = _config.get("batch_size", 10)
+        is_share = _config.get("is_share", "false").lower() == "true"
+        is_classic = _config.get("classic_inference", "false").lower() == "true"
+        enable_auth = _config.get("enable_auth", "false").lower() == "true"
+        users = _config.get("user", {})
+        try:
+            default_username = list(users.keys())[0]
+            default_password = users[default_username]
+        except:
+            default_username = "admin"
+            default_password = "admin123"
+
 def load_character_emotions(character_name, characters_and_emotions):
     emotion_options = ["default"]
     emotion_options = characters_and_emotions.get(character_name, ["default"])
@@ -198,25 +219,6 @@ def change_batch_size(batch_size):
     return
 
 
-tts_port = 5000
-
-# 取得模型文件夹路径
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-
-if os.path.exists(config_path):
-    with open(config_path, "r", encoding="utf-8") as f:
-        _config = json.load(f)
-        tts_port = _config.get("tts_port", 5000)
-        default_batch_size = _config.get("batch_size", 10)
-        is_share = _config.get("is_share", "false").lower() == "true"
-        enable_auth = _config.get("enable_auth", "false").lower() == "true"
-        users = _config.get("user", {})
-        try:
-            default_username = list(users.keys())[0]
-            default_password = users[default_username]
-        except:
-            default_username = "admin"
-            default_password = "admin123"
 
 default_request_url = f"http://127.0.0.1:{tts_port}"
 default_character_info_url = f"{default_request_url}/character_list"
@@ -254,8 +256,8 @@ with gr.Blocks() as app:
             characters_and_emotions = gr.State(characters_and_emotions_)
             scan_character_list = gr.Button("重新扫描人物列表",variant="secondary")
         with gr.Column(scale=1):    
-            speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05)
-            batch_size = gr.Slider(minimum=1, maximum=35, value=default_batch_size, label="batch_size，1代表不并行，越大越快，但是越可能爆",step=1)
+            speed_factor = gr.Slider(minimum=0.25, maximum=4, value=1, label="语速",step=0.05,visible=not is_classic)
+            batch_size = gr.Slider(minimum=1, maximum=35, value=default_batch_size, label="batch_size，1代表不并行，越大越快，但是越可能爆",step=1,visible= not is_classic)
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K",step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
             temperature = gr.Slider(minimum=0, maximum=1, value=0.8, label="Temperature")

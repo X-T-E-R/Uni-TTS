@@ -1,18 +1,48 @@
 backend_version = "2.1.4 240312"
 print(f"Backend version: {backend_version}")
 
+# 在开头加入路径
+import os, sys
+now_dir = os.getcwd()
+sys.path.append(now_dir)
+sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
+
 import soundfile as sf
 from flask import Flask, request, Response, jsonify, stream_with_context,send_file
 from flask_httpauth import HTTPBasicAuth
-import io, os
-import urllib.parse,sys
+import io
+import urllib.parse
 import tempfile
 import hashlib, json
 
 # 将当前文件所在的目录添加到 sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+# 从配置文件读取配置
+config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+enable_auth = False
+USERS = {}
+
+if os.path.exists(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        _config = json.load(f)
+        tts_port = _config.get("tts_port", 5000)
+        default_batch_size = _config.get("batch_size", 1)
+        enable_auth = _config.get("enable_auth", "false").lower() == "true"
+        is_classic = _config.get("classic_inference", "false").lower() == "true"
+        if enable_auth:
+            print("启用了身份验证")
+            USERS = _config.get("user", {})
+            
+try:
+    from TTS_infer_pack.TTS import TTS
+except ImportError:
+    is_classic = True
+    
+if not is_classic:
+    from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+else:
+    from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 
 app = Flask(__name__)
 
@@ -31,20 +61,7 @@ def generate_file_hash(*args):
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
-# 从配置文件读取配置
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-enable_auth = False
-USERS = {}
 
-if os.path.exists(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        _config = json.load(f)
-        tts_port = _config.get("tts_port", 5000)
-        default_batch_size = _config.get("batch_size", 1)
-        enable_auth = _config.get("enable_auth", "false").lower() == "true"
-        if enable_auth:
-            print("启用了身份验证")
-            USERS = _config.get("user", {})
 
 @auth.verify_password
 def verify_password(username, password):
@@ -99,15 +116,17 @@ def tts():
     params = {
         "text": text,
         "text_language": text_language,
-        "batch_size": batch_size,
-        "speed_factor": speed_factor,
+        
         "top_k": top_k,
         "top_p": top_p,
         "temperature": temperature,
         "character_emotion": character_emotion,
         "stream": stream
     }
-
+    # 如果不是经典模式，则添加额外的参数
+    if not is_classic:
+        params["batch_size"] = batch_size
+        params["speed_factor"] = speed_factor
     request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name)
     if stream == False:
         if save_temp:

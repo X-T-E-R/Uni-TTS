@@ -1,11 +1,11 @@
 global character_name
 
-import os, json, sys
-now_dir = os.getcwd()
-sys.path.append(now_dir)
-sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
+import os, json
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from classic_inference_core import get_tts_wav, get_streaming_tts_wav, change_sovits_weights, change_gpt_weights
 
-from inference_core import inference, tts_pipline, get_streaming_tts_wav
+print("您正在使用经典推理模式，不支持并行推理。\n如果您不希望使用，请去调节config.json文件中的classic_inference参数为false。")
 
 def load_infer_config(character_path):
     config_path = os.path.join(character_path, "infer_config.json")
@@ -64,7 +64,7 @@ def update_config_version(character_path):
         return config
     except:
         raise Exception("更新失败！请手动删除infer_config.json文件，让系统自动生成")
-
+             
 
 def auto_generate_infer_config(character_path):
     ## TODO: Auto-generate wav-list and prompt-list from character_path
@@ -159,8 +159,8 @@ def load_character(cha_name):
             raise Exception("找不到模型文件！请把有效模型放置在模型文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
     # 修改权重
     character_name = cha_name
-    tts_pipline.init_t2s_weights(gpt_path)
-    tts_pipline.init_vits_weights(sovits_path)
+    change_sovits_weights(sovits_path)
+    change_gpt_weights(gpt_path)
     print(f"加载角色成功: {cha_name}")
 
 def get_deflaut_character_name():
@@ -198,22 +198,14 @@ def match_character_emotion(character_path):
     if not os.path.exists(os.path.join(character_path, "reference_audio")):
         # 如果没有reference_audio文件夹，就返回None
         return None, None, None
+    
 
-
-def get_wav_from_text_api(
-    text,
-    text_language,
-    batch_size=1,
-    speed_factor=1.0,
-    top_k=12,
-    top_p=0.6,
-    temperature=0.6,
-    character_emotion="default",
-    stream=False,
-):
+def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default",stream=False):
     # 加载环境配置
     config = load_infer_config(os.path.join(models_path, character_name))
-
+    
+   
+    
     # 尝试从配置中提取参数，如果找不到则设置为None
     ref_wav_path =  None
     prompt_text = None
@@ -238,9 +230,9 @@ def get_wav_from_text_api(
                 break
         if ref_wav_path is None:
             print("找不到ref_wav_path！请删除infer_config.json文件，让系统自动生成")
-
+            
     print(prompt_text)
-
+    
     # 根据是否找到ref_wav_path和prompt_text、prompt_language来决定ref_free的值
     if ref_wav_path is not None and prompt_text is not None and prompt_language is not None:
         ref_free = False
@@ -249,29 +241,16 @@ def get_wav_from_text_api(
         top_k = 3
         top_p = 0.3
         temperature = 0.3
-    params = {
-        "text": text,
-        "text_lang": text_language,
-        "ref_audio_path": ref_wav_path,
-        "prompt_text": prompt_text,
-        "prompt_lang": prompt_language,
-        "top_k": top_k,
-        "top_p": top_p,
-        "temperature": temperature,
-        "text_split_method": "智能切分", 
-        "batch_size": batch_size,
-        "speed_factor": speed_factor,
-        "ref_text_free": ref_free,
-        "split_bucket":True,
-        "return_fragment":stream,
-        
-    }
+       
+
     # 调用原始的get_tts_wav函数
     # 注意：这里假设get_tts_wav函数及其所需的其它依赖已经定义并可用
     if stream == False:
-        return inference(**params)
+        return get_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free, stream=stream)
     else:
-        return get_streaming_tts_wav(params)
+        return get_streaming_tts_wav(ref_wav_path, prompt_text, prompt_language, text, text_language, top_k=top_k, top_p=top_p, temperature=temperature, ref_free=ref_free, byte_stream=True)
+
+
 
 
 def update_character_info():
@@ -297,7 +276,7 @@ def update_character_info():
         json.dump({"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}, f, ensure_ascii=False, indent=4)
 
     return {"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}
-
+        
 
 # def test_audio_save():
 #     fs, audio_to_save=get_wav_from_text_api("""这是一段音频测试""",'多语种混合')
