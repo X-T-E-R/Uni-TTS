@@ -7,6 +7,7 @@ from string import Template
 import pyaudio,wave
 
 tts_port = 5000
+self_version = "2.1.5 240313"
 
 # 取得模型文件夹路径
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
@@ -244,7 +245,7 @@ default_text="我是一个粉刷匠，粉刷本领强。我要把那新房子，
 
 with gr.Blocks() as app:
 
-    gr.HTML("""<p>这是一个由<a href="https://space.bilibili.com/66633770">XTer</a>提供的推理特化包，当前版本： <a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">2.1.4 240312</a> 使用前，请确认后端服务已启动。</p>
+    gr.HTML(f"""<p>这是一个由<a href="https://space.bilibili.com/66633770">XTer</a>提供的推理特化包，当前版本： <a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a> 使用前，请确认后端服务已启动。</p>
             <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。</p>
             <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>""")
     with gr.Row():

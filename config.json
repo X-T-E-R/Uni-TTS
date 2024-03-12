@@ -5,7 +5,7 @@
     "device": "auto",
     "batch_size": 10,
     "is_share": "false",
-    "classic_inference": "true",
+    "classic_inference": "false",
     "enable_auth": "false",
     "user": {
         "admin": "admin123"
@@ -16,7 +16,7 @@
     "备注4": "device可以填写cpu或者cuda，auto表示自动选择，如果你的显卡不支持cuda，就把它设置为cpu，一般不用动",
     "备注5": "batch_size是tts服务的批处理大小，越大越快，但可能出问题，默认是10",
     "备注6": "share代表是否分享你的前端为一个共享gradio，就可以分享链接给你的朋友了，默认为false",
-    "备注7": "classic_inference代表是否使用经典的推理方式，而不使用并行推理，默认为false，仅在您有特殊需求时启用",
+    "备注7": "classic_inference代表是否使用经典的推理方式，而不使用并行推理，默认为false",
     "用户认证备注": {
         "0": "用户认证的教程还没做好，前端没配置的话开了就会报错，现阶段还是不要开",
         "1": "enable_auth代表是否开启认证，默认为false，如果开启了认证，那么下面的user就必须填写",

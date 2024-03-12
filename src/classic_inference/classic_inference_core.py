@@ -316,9 +316,14 @@ def get_tts_chunk(ref_wav_path, text, text_language, bert1, phones1, prompt_sema
         )
     t3 = ttime()
     # print(pred_semantic.shape,idx)
-    pred_semantic = pred_semantic[:, -idx:].unsqueeze(
-        0
-    )  # .unsqueeze(0)#mq要多unsqueeze一次
+    if type(idx) == list:
+        idx = idx[0]
+        pred_semantic = pred_semantic[0][-idx:].unsqueeze(0).unsqueeze(0)
+        print(f"pred_type:{type(pred_semantic)}")
+    else:
+        pred_semantic = pred_semantic[:, -idx:].unsqueeze(
+            0
+        )  # .unsqueeze(0)#mq要多unsqueeze一次
     refer = get_spepc(hps, ref_wav_path)  # .to(device)
     if is_half == True:
         refer = refer.half().to(device)
