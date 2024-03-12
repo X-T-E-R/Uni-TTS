@@ -423,4 +423,4 @@ with gr.Blocks() as app:
     )
 
 
-app.launch(server_port=9867, show_error=True, share=is_share)
+app.launch(server_port=9867, show_error=True, share=is_share, inbrowser=True)
