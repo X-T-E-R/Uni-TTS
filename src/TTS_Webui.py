@@ -7,7 +7,7 @@ from string import Template
 import pyaudio, wave
 
 tts_port = 5000
-self_version = "2.1.5 240313"
+self_version = "2.1.6 240314"
 
 # 取得模型文件夹路径
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
