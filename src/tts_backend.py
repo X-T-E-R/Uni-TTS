@@ -10,6 +10,7 @@ sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
 import soundfile as sf
 from flask import Flask, request, Response, jsonify, stream_with_context,send_file
 from flask_httpauth import HTTPBasicAuth
+from flask_cors import CORS
 import io
 import urllib.parse
 import tempfile
@@ -45,6 +46,8 @@ else:
     from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 
 app = Flask(__name__)
+CORS(app, resources={r"/tts": {"origins": "*"},r"/character_list": {"origins": "*"}})
+
 
 # 存储临时文件的字典
 temp_files = {}
@@ -73,7 +76,10 @@ def verify_password(username, password):
 @app.route('/character_list', methods=['GET'])
 @auth.login_required
 def character_list():
-    return jsonify(update_character_info()['characters_and_emotions'])
+    res = jsonify(update_character_info()['characters_and_emotions'])
+    res.headers['Access-Control-Allow-Origin'] = "*"  # 设置允许跨域
+    res.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
+    return res
 
 
 @app.route('/tts', methods=['GET', 'POST'])
