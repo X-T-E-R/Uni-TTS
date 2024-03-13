@@ -128,25 +128,30 @@ def tts():
         params["batch_size"] = batch_size
         params["speed_factor"] = speed_factor
     request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name)
+    
+    format = data.get('format', 'wav')
+    if not format in ['wav', 'mp3', 'ogg']:
+        return jsonify({"error": "Invalid format. It must be one of 'wav', 'mp3', or 'ogg'."}), 400
+    
     if stream == False:
         if save_temp:
             if request_hash in temp_files:
-                return send_file(temp_files[request_hash], mimetype='audio/wav')
+                return send_file(temp_files[request_hash], mimetype=f'audio/{format}')
             else:
                 gen = get_wav_from_text_api(**params)
                 sampling_rate, audio_data = next(gen)
-                temp_file_path = tempfile.mktemp(suffix='.wav')
+                temp_file_path = tempfile.mktemp(suffix=f'.{format}')
                 with open(temp_file_path, 'wb') as temp_file:
-                    sf.write(temp_file, audio_data, sampling_rate, format='wav')
+                    sf.write(temp_file, audio_data, sampling_rate, format=format)
                 temp_files[request_hash] = temp_file_path
-                return send_file(temp_file_path, mimetype='audio/wav')
+                return send_file(temp_file_path, mimetype=f'audio/{format}')
         else:
             gen = get_wav_from_text_api(**params)
             sampling_rate, audio_data = next(gen)
             wav = io.BytesIO()
-            sf.write(wav, audio_data, sampling_rate, format="wav")
+            sf.write(wav, audio_data, sampling_rate, format=format)
             wav.seek(0)
-            return Response(wav, mimetype='audio/wav')
+            return Response(wav, mimetype=f'audio/{format}')
     else:
         gen = get_wav_from_text_api(**params)
         return Response(stream_with_context(gen),  mimetype='audio/wav')
