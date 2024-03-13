@@ -34,19 +34,19 @@ if os.path.exists(config_path):
         if enable_auth:
             print("启用了身份验证")
             USERS = _config.get("user", {})
-            
+
 try:
     from TTS_infer_pack.TTS import TTS
 except ImportError:
     is_classic = True
-    
+
 if not is_classic:
     from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 else:
     from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 
 app = Flask(__name__)
-CORS(app, resources={r"/tts": {"origins": "*"},r"/character_list": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 # 存储临时文件的字典
@@ -61,10 +61,9 @@ def generate_file_hash(*args):
     return hash_object.hexdigest()
 
 
-app = Flask(__name__)
+
 auth = HTTPBasicAuth()
-
-
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 @auth.verify_password
 def verify_password(username, password):
@@ -77,8 +76,6 @@ def verify_password(username, password):
 @auth.login_required
 def character_list():
     res = jsonify(update_character_info()['characters_and_emotions'])
-    res.headers['Access-Control-Allow-Origin'] = "*"  # 设置允许跨域
-    res.headers['Access-Control-Allow-Methods'] = 'PUT,GET,POST,DELETE'
     return res
 
 
@@ -139,6 +136,7 @@ def tts():
     if not format in ['wav', 'mp3', 'ogg']:
         return jsonify({"error": "Invalid format. It must be one of 'wav', 'mp3', or 'ogg'."}), 400
     
+   
     if stream == False:
         if save_temp:
             if request_hash in temp_files:
