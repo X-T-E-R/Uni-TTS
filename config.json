@@ -7,6 +7,7 @@
     "is_share": "false",
     "classic_inference": "false",
     "enable_auth": "false",
+    "max_word_count": 20,
     "user": {
         "admin": "admin123"
     },

@@ -68,16 +68,6 @@ dict_language = {
     "all_ja": "all_ja",
 }
 
-cut_method = {
-    i18n("不切"):"cut0",
-    i18n("凑四句一切"): "cut1",
-    i18n("凑50字一切"): "cut2",
-    i18n("按中文句号。切"): "cut3",
-    i18n("按英文句号.切"): "cut4",
-    i18n("按标点符号切"): "cut5",
-    i18n("智能切分"): "auto_cut",
-}
-
 tts_config = TTS_Config("")
 tts_config.device = device
 tts_config.is_half = is_half
@@ -109,7 +99,7 @@ def inference(text, text_lang,
         "top_k": top_k,
         "top_p": top_p,
         "temperature": temperature,
-        "text_split_method": cut_method[text_split_method],
+        "text_split_method": text_split_method,
         "batch_size":int(batch_size),
         "speed_factor":float(speed_factor),
         "split_bucket":split_bucket,

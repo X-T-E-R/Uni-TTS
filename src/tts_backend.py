@@ -1,4 +1,4 @@
-backend_version = "2.2.1 240315"
+backend_version = "2.2.2 240315"
 print(f"Backend version: {backend_version}")
 
 # 在开头加入路径
@@ -29,6 +29,7 @@ if os.path.exists(config_path):
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
         default_batch_size = _config.get("batch_size", 1)
+        default_word_count = _config.get("max_word_count", 50)
         enable_auth = _config.get("enable_auth", "false").lower() == "true"
         is_classic = _config.get("classic_inference", "false").lower() == "true"
         if enable_auth:
@@ -103,7 +104,7 @@ def tts():
     elif expected_path and not os.path.exists(expected_path):
         return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
 
-    text_language = data.get('text_language', '多语种混合')
+    text_language = str(data.get('text_language', '多语种混合')).lower()
     try:
         batch_size = int(data.get('batch_size', default_batch_size))
         speed_factor = float(data.get('speed', 1.0))
@@ -112,9 +113,13 @@ def tts():
         temperature = float(data.get('temperature', 0.8))
     except ValueError:
         return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
-    stream = data.get('stream', 'False').lower() == 'true'
-    save_temp = data.get('save_temp', 'False').lower() == 'true'
+    stream = str(data.get('stream', 'False')).lower() in ('true', '1', 't', 'y', 'yes')
+    save_temp = str(data.get('save_temp', 'False')).lower() in ('true', '1', 't', 'y', 'yes')
+    cut_method = str(data.get('cut_method', 'auto_cut')).lower()
     character_emotion = data.get('character_emotion', 'default')
+
+    if cut_method == "auto_cut":
+        cut_method = f"auto_cut_{default_word_count}"
     
     params = {
         "text": text,
@@ -124,6 +129,7 @@ def tts():
         "top_p": top_p,
         "temperature": temperature,
         "character_emotion": character_emotion,
+        "cut_method": cut_method,
         "stream": stream
     }
     # 如果不是经典模式，则添加额外的参数

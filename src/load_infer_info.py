@@ -209,6 +209,7 @@ def get_wav_from_text_api(
     top_p=0.6,
     temperature=0.6,
     character_emotion="default",
+    cut_method="auto_cut",
     stream=False,
 ):
     text = text.replace("\r", "\n").replace("<br>", "\n").replace("\t", " ")
@@ -259,7 +260,7 @@ def get_wav_from_text_api(
         "top_k": top_k,
         "top_p": top_p,
         "temperature": temperature,
-        "text_split_method": "智能切分", 
+        "text_split_method": cut_method, 
         "batch_size": batch_size,
         "speed_factor": speed_factor,
         "ref_text_free": ref_free,

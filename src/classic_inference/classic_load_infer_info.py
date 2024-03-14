@@ -200,7 +200,7 @@ def match_character_emotion(character_path):
         return None, None, None
     
 
-def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default",stream=False):
+def get_wav_from_text_api(text, text_language, top_k=12, top_p=0.6, temperature=0.6, character_emotion="default", cut_method="auto_cut", stream=False):
     # 加载环境配置
     config = load_infer_config(os.path.join(models_path, character_name))
     

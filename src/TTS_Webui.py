@@ -13,8 +13,12 @@ language_list = ["auto", "zh", "en", "ja", "all_zh", "all_ja"]
 translated_language_list = [i18n("auto"), i18n("zh"), i18n("en"), i18n("ja"), i18n("all_zh"), i18n("all_ja")] # 由于i18n库的特性，这里需要全部手输一遍
 language_dict = dict(zip(translated_language_list, language_list))
 
+cut_method_list = ["auto_cut", "cut0", "cut1", "cut2", "cut3", "cut4", "cut5"]
+translated_cut_method_list = [i18n("auto_cut"), i18n("cut0"), i18n("cut1"), i18n("cut2"), i18n("cut3"), i18n("cut4"), i18n("cut5")]
+cut_method_dict = dict(zip(translated_cut_method_list, cut_method_list))
+
 tts_port = 5000
-self_version = "2.2.1 240315"
+self_version = "2.2.2 240315"
 
 # 取得模型文件夹路径
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
@@ -24,6 +28,7 @@ if os.path.exists(config_path):
         _config = json.load(f)
         tts_port = _config.get("tts_port", 5000)
         default_batch_size = _config.get("batch_size", 10)
+        default_word_count = _config.get("max_word_count", 80)
         is_share = _config.get("is_share", "false").lower() == "true"
         is_classic = _config.get("classic_inference", "false").lower() == "true"
         enable_auth = _config.get("enable_auth", "false").lower() == "true"
@@ -60,10 +65,15 @@ def send_request(
     top_p,
     temperature,
     character_emotion,
+    cut_method,
+    word_count,
     stream="False",
 ):
     urlencoded_text = requests.utils.quote(text)
     text_language = language_dict[text_language]
+    cut_method = cut_method_dict[cut_method]
+    if cut_method == "auto_cut":
+        cut_method = f"{cut_method}_{word_count}"
     # Using Template to fill in variables
     params = {
         "chaName": cha_name,
@@ -75,6 +85,7 @@ def send_request(
         "topP": top_p,
         "temperature": temperature,
         "characterEmotion": character_emotion,
+        "cut_method": cut_method,
         "stream": stream,
     }
 
@@ -234,6 +245,17 @@ def change_batch_size(batch_size):
         pass
     return
 
+def change_word_count(word_count):
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            _config = json.load(f)
+        with open(config_path, "w", encoding="utf-8") as f:
+            _config["max_word_count"] = word_count
+            json.dump(_config, f, ensure_ascii=False, indent=4)
+    except:
+        pass
+    return
+
 
 default_request_url = f"http://127.0.0.1:{tts_port}"
 default_character_info_url = f"{default_request_url}/character_list"
@@ -251,10 +273,14 @@ default_endpoint_data = """{
         "top_p": ${topP},
         "temperature": ${temperature},
         "stream": "${stream}",
+        "cut_method": "${cut_method}",
         "save_temp": "False"
     }
 }"""
 default_text = i18n("我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。")
+
+
+
 
 
 with gr.Blocks() as app:
@@ -274,6 +300,11 @@ with gr.Blocks() as app:
                 value=translated_language_list[0],
                 label=i18n("文本语言"),
             )
+            cut_method = gr.Dropdown(
+                translated_cut_method_list,
+                value=translated_cut_method_list[0],
+                label=i18n("切句方式")
+            )
             (
                 cha_name,
                 auto_emotion_checkbox,
@@ -282,6 +313,7 @@ with gr.Blocks() as app:
             ) = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
             scan_character_list = gr.Button(i18n("重新扫描人物列表"), variant="secondary")
+            
         with gr.Column(scale=1):
             speed_factor = gr.Slider(
                 minimum=0.25,
@@ -299,12 +331,17 @@ with gr.Blocks() as app:
                 step=1,
                 visible=not is_classic,
             )
+            word_count = gr.Slider(
+                minimum=5,maximum=500,value=default_word_count,label=i18n("每句允许最大切分字词数"),step=1, visible=True
+            )
             top_k = gr.Slider(minimum=1, maximum=30, value=6, label=i18n("Top K"), step=1)
             top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label=i18n("Top P"))
             temperature = gr.Slider(
                 minimum=0, maximum=1, value=0.8, label=i18n("Temperature")
             )
             batch_size.release(change_batch_size, inputs=[batch_size])
+            word_count.release(change_word_count, inputs=[word_count])
+            cut_method.input(lambda x: gr.update(visible=(cut_method_dict[x]=="auto_cut")),  [cut_method], [word_count])
         with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab(label=i18n("网址设置")):
@@ -324,8 +361,12 @@ with gr.Blocks() as app:
                         inputs=[request_url_input],
                         outputs=[endpoint, character_list_url],
                     )
-                with gr.Tab(label=i18n("认证设置")):
-
+                with gr.Tab(label=i18n("认证信息"),visible=enable_auth):
+                    gr.Textbox(
+                        value=i18n("认证信息已启用，您可以在config.json中关闭。\n但是这个功能还没做好，只是摆设"),
+                        label=i18n("认证信息"),
+                        interactive=False
+                    )
                     username = gr.Textbox(
                         value=default_username, label=i18n("用户名"), interactive=False
                     )
@@ -351,6 +392,8 @@ with gr.Blocks() as app:
                 stopStreamButton = gr.Button(i18n("停止播放"), variant="secondary")
             with gr.Row():
                 audioStreamRecieve = gr.Audio(None, label=i18n("音频输出"), interactive=False)
+                
+                
     sendRequest.click(lambda: gr.update(interactive=False), None, [sendRequest]).then(
         send_request,
         inputs=[
@@ -365,6 +408,8 @@ with gr.Blocks() as app:
             top_p,
             temperature,
             character_emotion,
+            cut_method,
+            word_count,
             gr.State("False"),
         ],
         outputs=[audioRecieve],
@@ -385,6 +430,8 @@ with gr.Blocks() as app:
             top_p,
             temperature,
             character_emotion,
+            cut_method,
+            word_count,
             gr.State("True"),
         ],
         outputs=[audioStreamRecieve],
