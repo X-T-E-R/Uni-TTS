@@ -24,13 +24,13 @@
 
 ## 英文说明
 
-This is a reasoning-specialized plugin developed based on GPT-soVITS. For more information, please visit the project at: https://github.com/X-T-E-R/TTS-for-GPT-soVITS
+This is a inference-specialized plugin developed based on GPT-soVITS. For more information, please visit the project at: https://github.com/X-T-E-R/TTS-for-GPT-soVITS
 
-It features a separation of front-end and back-end, model management, multiple roles/emotions switching, and stream reasoning. All voice synthesis is based on a unified API service. 
+It features a separation of front-end and back-end, model management, multiple roles/emotions switching, and a streaming inference pipeline. All voice synthesis is based on a unified API service. 
 
 Currently, it primarily supports Chinese, with multi-language support still under development.
 
-For detailed documentation, usage instructions, and integration packages, please see the document at: https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp
+For detailed documentation, usage instructions, and package integration, please see the document at: https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp
 
 Back-end program: `src/tts_backend.py`
 
