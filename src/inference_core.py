@@ -24,7 +24,7 @@ is_half = eval(os.environ.get("is_half", "True"))
 from TTS_infer_pack.TTS import TTS, TTS_Config
 from tools.i18n.i18n import I18nAuto
 
-i18n = I18nAuto()
+i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'  # 确保直接启动推理UI时也能够设置。
 
@@ -54,12 +54,18 @@ print(f"device: {device}, is_half: {is_half}")
 
 
 dict_language = {
-    i18n("中文"): "all_zh",#全部按中文识别
-    i18n("英文"): "en",#全部按英文识别#######不变
-    i18n("日文"): "all_ja",#全部按日文识别
-    i18n("中英混合"): "zh",#按中英混合识别####不变
-    i18n("日英混合"): "ja",#按日英混合识别####不变
-    i18n("多语种混合"): "auto",#多语种启动切分识别语种
+    "中文": "all_zh",#全部按中文识别
+    "英文": "en",#全部按英文识别#######不变
+    "日文": "all_ja",#全部按日文识别
+    "中英混合": "zh",#按中英混合识别####不变
+    "日英混合": "ja",#按日英混合识别####不变
+    "多语种混合": "auto",#多语种启动切分识别语种
+    "auto": "auto",
+    "zh": "zh",
+    "en": "en",
+    "ja": "ja",
+    "all_zh": "all_zh",
+    "all_ja": "all_ja",
 }
 
 cut_method = {
@@ -89,8 +95,8 @@ def inference(text, text_lang,
               return_fragment
               ):
     try:
-        text_lang = dict_language[text_lang]
-        prompt_lang = dict_language[prompt_lang]
+        text_lang = dict_language[text_lang.lower()]
+        prompt_lang = dict_language[prompt_lang.lower()]
     except:
         text_lang = "auto"
         prompt_lang = "auto"

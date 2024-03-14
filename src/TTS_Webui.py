@@ -5,9 +5,16 @@ import requests
 import numpy as np
 from string import Template
 import pyaudio, wave
+from tools.i18n.i18n import I18nAuto
+
+i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
+
+language_list = ["auto", "zh", "en", "ja", "all_zh", "all_ja"]
+translated_language_list = [i18n("auto"), i18n("zh"), i18n("en"), i18n("ja"), i18n("all_zh"), i18n("all_ja")] # 由于i18n库的特性，这里需要全部手输一遍
+language_dict = dict(zip(translated_language_list, language_list))
 
 tts_port = 5000
-self_version = "2.1.6 240314"
+self_version = "2.2.1 240315"
 
 # 取得模型文件夹路径
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
@@ -56,8 +63,8 @@ def send_request(
     stream="False",
 ):
     urlencoded_text = requests.utils.quote(text)
-
-    # 使用Template填充变量
+    text_language = language_dict[text_language]
+    # Using Template to fill in variables
     params = {
         "chaName": cha_name,
         "speakText": urlencoded_text,
@@ -76,42 +83,42 @@ def send_request(
 
     endpoint_data_template = Template(endpoint_data)
     filled_json_str = endpoint_data_template.substitute(**params)
-    # 解析填充后的JSON字符串
+    # Parse the filled JSON string
     request_data = json.loads(filled_json_str)
     body = request_data["body"]
     if stream.lower() == "false":
-        print(f"发送请求到{final_endpoint}")
-        # 发送POST请求
+        print(i18n("发送请求到") + final_endpoint)
+        # Sending POST request
         response = requests.post(final_endpoint, json=body)
-        # 检查请求是否成功
+        # Checking if the request was successful
         if response.status_code == 200:
-            # 生成保存路径
+            # Generating save path
             save_path = (
                 f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
             )
 
-            # 检查保存路径是否存在
+            # Checking if the save path exists
             if not os.path.exists("tmp_audio"):
                 os.makedirs("tmp_audio")
 
-            # 保存音频文件到本地
+            # Saving the audio file locally
             with open(save_path, "wb") as f:
                 f.write(response.content)
 
-            # 返回给gradio
+            # Returning to gradio
             return gr.Audio(save_path, type="filepath")
         else:
             gr.Warning(
-                f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}"
+                i18n("请求失败，状态码：") + f"{response.status_code}" + i18n(", 返回内容：") + f"{response.content}"
             )
             return gr.Audio(None, type="filepath")
     else:
-        # 发送POST请求
+        # Sending POST request
         response = requests.post(final_endpoint, json=body, stream=True)
-        # 检查请求是否成功
+        # Checking if the request was successful
 
         global p, streamAudio
-        # 打开音频流
+        # Opening the audio stream
         streamAudio = p.open(
             format=p.get_format_from_width(2), channels=1, rate=32000, output=True
         )
@@ -122,32 +129,32 @@ def send_request(
                 f"tmp_audio/{cha_name}{datetime.now().strftime('%Y%m%d%H%M%S%f')}.wav"
             )
 
-            # 音频参数
-            channels = 1  # 单声道
-            sampwidth = 2  # 采样位宽，2字节（16位）
-            framerate = 32000  # 采样率，32000 Hz
+            # Audio parameters
+            channels = 1  # Mono
+            sampwidth = 2  # Sample width, 2 bytes (16 bits)
+            framerate = 32000  # Sample rate, 32000 Hz
 
-            # 检查保存路径是否存在
+            # Checking if the save path exists
             if not os.path.exists("tmp_audio"):
                 os.makedirs("tmp_audio")
 
-            # 打开一个新的 wave 文件，准备写入
+            # Opening a new wave file to write
             with wave.open(save_path, "wb") as wf:
-                wf.setnchannels(channels)  # 设置声道数
-                wf.setsampwidth(sampwidth)  # 设置采样位宽
-                wf.setframerate(framerate)  # 设置采样率
+                wf.setnchannels(channels)  # Setting the number of channels
+                wf.setsampwidth(sampwidth)  # Setting the sample width
+                wf.setframerate(framerate)  # Setting the sample rate
                 for data in response.iter_content(chunk_size=1024):
                     wf.writeframes(data)
                     if (streamAudio is not None) and (not streamAudio.is_stopped()):
                         streamAudio.write(data)
 
-            # 停止和关闭流
+            # Stopping and closing the stream
             if streamAudio is not None:
                 streamAudio.stop_stream()
             return gr.Audio(save_path, type="filepath")
         else:
             gr.Warning(
-                f"请求失败，状态码：{response.status_code}, 返回内容：{response.content}"
+                i18n("请求失败，状态码：") + f"{response.status_code}" + i18n(", 返回内容：") + f"{response.content}"
             )
             return gr.Audio(None, type="filepath")
 
@@ -165,9 +172,9 @@ def get_characters_and_emotions(character_list_url):
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"请求失败，状态码：{response.status_code}")
+            raise Exception(i18n("请求失败，状态码：") + f"{response.status_code}")
     except:
-        raise Exception("请求失败，请检查URL是否正确")
+        raise Exception(i18n("请求失败，请检查URL是否正确"))
 
 
 def change_character_list(
@@ -198,15 +205,15 @@ def change_character_list(
         characters_and_emotions = {}
     if auto_emotion:
         return (
-            gr.Dropdown(character_names, value=character_name_value, label="选择角色"),
-            gr.Checkbox(auto_emotion, label="是否自动匹配情感"),
-            gr.Dropdown(["auto"], value="auto", label="情感列表", interactive=False),
+            gr.Dropdown(character_names, value=character_name_value, label=i18n("选择角色")),
+            gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感")),
+            gr.Dropdown(["auto"], value="auto", label=i18n("情感列表"), interactive=False),
             characters_and_emotions,
         )
     return (
-        gr.Dropdown(character_names, value=character_name_value, label="选择角色"),
-        gr.Checkbox(auto_emotion, label="是否自动匹配情感"),
-        gr.Dropdown(emotions, value=emotion_value, label="情感列表", interactive=True),
+        gr.Dropdown(character_names, value=character_name_value, label=i18n("选择角色")),
+        gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感")),
+        gr.Dropdown(emotions, value=emotion_value, label=i18n("情感列表"), interactive=True),
         characters_and_emotions,
     )
 
@@ -247,26 +254,25 @@ default_endpoint_data = """{
         "save_temp": "False"
     }
 }"""
-default_text = "我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。"
+default_text = i18n("我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。")
 
 
 with gr.Blocks() as app:
-
     gr.HTML(
-        f"""<p>这是一个由<a href="https://space.bilibili.com/66633770">XTer</a>提供的推理特化包，当前版本： <a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a> 使用前，请确认后端服务已启动。</p>
-            <p>吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。</p>
-            <p>若有疑问或需要进一步了解，可参考文档：<a href="https://www.yuque.com/xter/zibxlp">点击查看详细文档</a>。</p>"""
+        f"""<p>{i18n("这是一个由")}<a href="https://space.bilibili.com/66633770">XTer</a>{i18n("提供的推理特化包，当前版本：")}<a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a>{i18n("使用前，请确认后端服务已启动。")}</p>
+            <p>{i18n("吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。")}</p>
+            <p>{i18n("若有疑问或需要进一步了解，可参考文档：")}<a href="{i18n(r"https://www.yuque.com/xter/zibxlp")}">{i18n("点击查看详细文档")}</a>。</p>"""
     )
     with gr.Row():
         text = gr.Textbox(
-            value=default_text, label="输入文本", interactive=True, lines=8
+            value=default_text, label=i18n("输入文本"), interactive=True, lines=8
         )
     with gr.Row():
         with gr.Column(scale=2):
             text_language = gr.Dropdown(
-                ["多语种混合", "中文", "英文", "日文", "中英混合", "日英混合"],
-                value="多语种混合",
-                label="文本语言",
+                translated_language_list,
+                value=translated_language_list[0],
+                label=i18n("文本语言"),
             )
             (
                 cha_name,
@@ -275,13 +281,13 @@ with gr.Blocks() as app:
                 characters_and_emotions_,
             ) = change_character_list(default_character_info_url)
             characters_and_emotions = gr.State(characters_and_emotions_)
-            scan_character_list = gr.Button("重新扫描人物列表", variant="secondary")
+            scan_character_list = gr.Button(i18n("重新扫描人物列表"), variant="secondary")
         with gr.Column(scale=1):
             speed_factor = gr.Slider(
                 minimum=0.25,
                 maximum=4,
                 value=1,
-                label="语速",
+                label=i18n("语速"),
                 step=0.05,
                 visible=not is_classic,
             )
@@ -289,28 +295,28 @@ with gr.Blocks() as app:
                 minimum=1,
                 maximum=35,
                 value=default_batch_size,
-                label="batch_size，1代表不并行，越大越快，但是越可能爆",
+                label=i18n("batch_size，1代表不并行，越大越快，但是越可能爆"),
                 step=1,
                 visible=not is_classic,
             )
-            top_k = gr.Slider(minimum=1, maximum=30, value=6, label="Top K", step=1)
-            top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label="Top P")
+            top_k = gr.Slider(minimum=1, maximum=30, value=6, label=i18n("Top K"), step=1)
+            top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label=i18n("Top P"))
             temperature = gr.Slider(
-                minimum=0, maximum=1, value=0.8, label="Temperature"
+                minimum=0, maximum=1, value=0.8, label=i18n("Temperature")
             )
             batch_size.release(change_batch_size, inputs=[batch_size])
         with gr.Column(scale=2):
             with gr.Tabs():
-                with gr.Tab(label="网址设置"):
+                with gr.Tab(label=i18n("网址设置")):
                     request_url_input = gr.Textbox(
-                        value=default_request_url, label="请求网址", interactive=True
+                        value=default_request_url, label=i18n("请求网址"), interactive=True
                     )
                     endpoint = gr.Textbox(
-                        value=default_endpoint, label="Endpoint", interactive=False
+                        value=default_endpoint, label=i18n("Endpoint"), interactive=False
                     )
                     character_list_url = gr.Textbox(
                         value=default_character_info_url,
-                        label="人物情感列表网址",
+                        label=i18n("人物情感列表网址"),
                         interactive=False,
                     )
                     request_url_input.blur(
@@ -318,33 +324,33 @@ with gr.Blocks() as app:
                         inputs=[request_url_input],
                         outputs=[endpoint, character_list_url],
                     )
-                with gr.Tab(label="认证设置"):
+                with gr.Tab(label=i18n("认证设置")):
 
                     username = gr.Textbox(
-                        value=default_username, label="用户名", interactive=False
+                        value=default_username, label=i18n("用户名"), interactive=False
                     )
                     password = gr.Textbox(
-                        value=default_password, label="密码", interactive=False
+                        value=default_password, label=i18n("密码"), interactive=False
                     )
-                with gr.Tab(label="json设置（一般不动）"):
+                with gr.Tab(label=i18n("json设置（一般不动）")):
                     endpoint_data = gr.Textbox(
-                        value=default_endpoint_data, label="发送json格式", lines=10
+                        value=default_endpoint_data, label=i18n("发送json格式"), lines=10
                     )
     with gr.Tabs():
-        with gr.Tab(label="请求完整音频"):
+        with gr.Tab(label=i18n("请求完整音频")):
             with gr.Row():
-                sendRequest = gr.Button("发送请求", variant="primary")
+                sendRequest = gr.Button(i18n("发送请求"), variant="primary")
                 audioRecieve = gr.Audio(
-                    None, label="音频输出", type="filepath", streaming=False
+                    None, label=i18n("音频输出"), type="filepath", streaming=False
                 )
-        with gr.Tab(label="流式音频"):
+        with gr.Tab(label=i18n("流式音频")):
             with gr.Row():
                 sendStreamRequest = gr.Button(
-                    "发送并开始播放", variant="primary", interactive=True
+                    i18n("发送并开始播放"), variant="primary", interactive=True
                 )
-                stopStreamButton = gr.Button("停止播放", variant="secondary")
+                stopStreamButton = gr.Button(i18n("停止播放"), variant="secondary")
             with gr.Row():
-                audioStreamRecieve = gr.Audio(None, label="音频输出", interactive=False)
+                audioStreamRecieve = gr.Audio(None, label=i18n("音频输出"), interactive=False)
     sendRequest.click(lambda: gr.update(interactive=False), None, [sendRequest]).then(
         send_request,
         inputs=[

@@ -211,6 +211,7 @@ def get_wav_from_text_api(
     character_emotion="default",
     stream=False,
 ):
+    text = text.replace("\r", "\n").replace("<br>", "\n").replace("\t", " ")
     # 加载环境配置
     config = load_infer_config(os.path.join(models_path, character_name))
 
