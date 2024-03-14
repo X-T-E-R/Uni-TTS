@@ -1,44 +1,42 @@
-## 中文说明
 
-这是一个基于[GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS)开发的 推理特化插件
-请见项目：https://github.com/X-T-E-R/TTS-for-GPT-soVITS
+[**English**](./README.md) | [**中文简体**](./docs/cn/README.md) 
 
-并且实现了 前后端分离、模型管理、多角色/情绪切换、流式推理等特性。一切语音合成基于一个统一的API服务
+---
 
-详细中文文档、使用说明和整合包请见文档：https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp
+## Welcome
+This is an inference-specialized plugin developed on top of GPT-SoVITS, designed to enhance your text-to-speech (TTS) experience by offering a user-friendly API interface over the original functionalities. Our plugin, acting as a submodule, enriches the original GPT-SoVITS project, making voice synthesis more accessible and versatile for all users.
+### **Suite Overview**
+We offer a unified API interface that simplifies the voice synthesis process. This includes basic backend functionalities of a voice synthesis engine such as selecting speakers, speed, and emotional tones, as well as advanced options like audio format selection, streaming synthesis, and additional GSV-specific parameters like text segmentation, batch size, and GPT diffusion parameters.
+Additionally, we provide two accompanying Gradio applications: one for the frontend interface, facilitating voice synthesis operations, and another for model management, where users can customize character presets and emotional reference audios for a more personalized voice synthesis experience.
+### **Core Features**
 
-后端程序：`src/tts_backend.py`
+- **High-Level Abstract Interface**: Simplifies user interaction by abstracting away complex model paths and technical parameters, allowing easy import and selection of characters and emotions through intuitive "character cards."
+- **Comprehensive TTS Engine Support**: Includes all essential text-to-speech engine capabilities such as speaker selection, speed adjustment, and volume control, ensuring users can tailor the voice output to their specific needs.
+- **One-Click Operation**: Streamlines the process from character import to voice synthesis, facilitating a one-click operation experience.
+- **User-Friendly Design**: Aimed at providing a clear, simple, and easy-to-use experience for users of all technical backgrounds.
+- **High Compatibility and Extensibility**: The API is designed for compatibility with different platforms and applications, from mobile apps and desktop software to web services, requiring a server or local computer running the backend service. We also offer extensive API documentation for developers, supporting custom development and extension.
+### **Installation Guide**
+Installing our plugin is straightforward, even given its innovative approach. You have two main options: self-deployment or using our provided Windows integration package.
+#### **1. Self-Deployment**
+Given our aggressive development strategy and the extensive customization over the original project's experimental branch, "fast_inference_", it's recommended to use our specifically prepared fork version, GSVI (GPT-SoVITS-Inference), optimized for extended functionalities and plugin compatibility.
 
-前端程序：`src/TTS_Webui.py`
+- **GSVI Source**: [GSVI on GitHub](https://github.com/X-T-E-R/GPT-SoVITS-Inference)
 
-模型管理界面：`src/Character_Manager.py`
+Follow the installation instructions provided on the page.
+#### **2. Integration Package (For Windows Users)**
+We highly recommend Windows users to opt for the integration package, streamlined for the Windows platform, which includes pre-trained models, a Python environment, and an Easy Language-written launcher.
 
+- **Integration Package Download**: Access our documentation on [Yuque](https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp) for the download link and detailed installation and usage guide.
+### **Usage Instructions**
 
+- **Flask Backend Program**: `src/tts_backend.py``
+- **Gradio Frontend Application**: `src/TTS_Webui.py`
+- **Gradio Model Management Interface**: `src/Character_Manager.py`
 
-有关于文档：主要的文档都放在了语雀上，中文用户请直接看语雀，~~其它用户请等待我写文档并且在代码中使用i18n~~
+For API documentation, visit our Yuque documentation page: [API Documentation](https://www.yuque.com/xter/zibxlp/knu8p82lb5ipufqy). Note that the updates in the **doc** folder's markdown files might not be immediate.
+### **Next Steps**
 
-仅导出了几个核心文档：
-[API接口文档]( ./docs/cn/API接口文档.md) [模型文件导入方式]( ./docs/cn/模型文件导入方式.md) [项目说明]( ./docs/cn/项目说明.md) 
+- **Explore Documentation**: We strongly recommend reading our documentation and usage instructions before starting, available at: [Documentation Link](https://www.yuque.com/xter/zibxlp).
+- **Community Support**: If you encounter any issues during installation or use, don't hesitate to join our community or consult the FAQ. Our community is vibrant, with many experienced users and developers ready to assist newcomers. QQ Group: 863760614
 
-
-
-## 英文说明
-
-This is a inference-specialized plugin developed based on GPT-soVITS. For more information, please visit the project at: https://github.com/X-T-E-R/TTS-for-GPT-soVITS
-
-It features a separation of front-end and back-end, model management, multiple roles/emotions switching, and a streaming inference pipeline. All voice synthesis is based on a unified API service. 
-
-Currently, it primarily supports Chinese, with multi-language support still under development.
-
-For detailed documentation, usage instructions, and package integration, please see the document at: https://www.yuque.com/xter/zibxlp/kkicvpiogcou5lgp
-
-Back-end program: `src/tts_backend.py`
-
-Front-end program: `src/TTS_Webui.py`
-
-Model management interface: `src/Character_Manager.py`
-
-
-
-
-
+By following these steps, you should be able to easily begin using our project, whether for voice synthesis experiments or developing your applications. We look forward to seeing how you utilize GSVI to bring your creative projects to life!
