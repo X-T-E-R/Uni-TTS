@@ -3,11 +3,11 @@
     "tts_port": 5000,
     "half_precision": "auto",
     "device": "auto",
-    "batch_size": 10,
+    "batch_size": 1,
+    "max_word_count": 20,
     "is_share": "false",
     "classic_inference": "false",
     "enable_auth": "false",
-    "max_word_count": 20,
     "user": {
         "admin": "admin123"
     },
