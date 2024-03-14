@@ -1,5 +1,5 @@
 
-[**English**](readme.md) | [**简体中文**](docs/cn/readme.md) 
+[**English**](./readme.md) | [**简体中文**](./docs/cn/readme.md) 
 
 ---
 
