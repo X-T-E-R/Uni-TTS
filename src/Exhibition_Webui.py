@@ -237,9 +237,9 @@ default_text = i18n("我是一个粉刷匠，粉刷本领强。我要把那新�
 
 with gr.Blocks() as app:
     gr.HTML(
-        f"""<p>{i18n("这是一个由")}<a href="https://space.bilibili.com/66633770">XTer</a>{i18n("提供的推理特化包，当前版本：")}<a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{frontend_version}</a></p>
+        f"""<p>{i18n("这是一个由")} <a href="{i18n("https://space.bilibili.com/66633770")}">XTer</a> {i18n("提供的推理特化包，当前版本：")}<a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{frontend_version}</a>  {i18n("项目开源地址：")} <a href="https://github.com/X-T-E-R/TTS-for-GPT-soVITS">Github</a></p>
             <p>{i18n("吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。")}</p>
-            <p>{i18n("若有疑问或需要进一步了解，可参考文档：")}<a href="{i18n(r"https://www.yuque.com/xter/zibxlp")}">{i18n("点击查看详细文档")}</a>。</p>"""
+            <p>{i18n("若有疑问或需要进一步了解，可参考文档：")}<a href="{i18n("https://www.yuque.com/xter/zibxlp")}">{i18n("点击查看详细文档")}</a>。</p>"""
     )
     with gr.Row():
         text = gr.Textbox(
