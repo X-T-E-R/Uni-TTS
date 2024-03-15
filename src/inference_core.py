@@ -85,7 +85,8 @@ def inference(text, text_lang,
               text_split_method, batch_size, 
               speed_factor, ref_text_free,
               split_bucket,
-              return_fragment
+              return_fragment,
+              seed
               ):
     try:
         text_lang = dict_language[text_lang.lower()]
@@ -107,6 +108,7 @@ def inference(text, text_lang,
         "speed_factor":float(speed_factor),
         "split_bucket":split_bucket,
         "return_fragment":return_fragment,
+        "seed":seed
     }
     return tts_pipline.run(inputs)
 

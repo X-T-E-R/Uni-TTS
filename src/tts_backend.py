@@ -1,4 +1,4 @@
-backend_version = "2.2.2 240315"
+backend_version = "2.2.3 240316"
 print(f"Backend version: {backend_version}")
 
 # 在开头加入路径
@@ -111,6 +111,7 @@ def tts():
         top_k = int(data.get('top_k', 6))
         top_p = float(data.get('top_p', 0.8))
         temperature = float(data.get('temperature', 0.8))
+        seed = int(data.get('seed', -1))
     except ValueError:
         return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
     stream = str(data.get('stream', 'False')).lower() in ('true', '1', 't', 'y', 'yes')
@@ -136,7 +137,8 @@ def tts():
     if not is_classic:
         params["batch_size"] = batch_size
         params["speed_factor"] = speed_factor
-    request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name)
+        params["seed"] = seed
+    request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name, seed)
     
     format = data.get('format', 'wav')
     if not format in ['wav', 'mp3', 'ogg']:

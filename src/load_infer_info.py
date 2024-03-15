@@ -210,6 +210,7 @@ def get_wav_from_text_api(
     temperature=0.6,
     character_emotion="default",
     cut_method="auto_cut",
+    seed=-1,
     stream=False,
 ):
     text = text.replace("\r", "\n").replace("<br>", "\n").replace("\t", " ")
@@ -266,6 +267,7 @@ def get_wav_from_text_api(
         "ref_text_free": ref_free,
         "split_bucket":True,
         "return_fragment":stream,
+        "seed": seed,
         
     }
     # 调用原始的get_tts_wav函数

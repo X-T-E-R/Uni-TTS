@@ -1,3 +1,5 @@
+frontend_version = "2.2.3 240316"
+
 from datetime import datetime
 import gradio as gr
 import json, os
@@ -48,8 +50,6 @@ translated_cut_method_list = [i18n("auto_cut"), i18n("cut0"), i18n("cut1"), i18n
 cut_method_dict = dict(zip(translated_cut_method_list, cut_method_list))
 
 tts_port = 5000
-self_version = "2.2.2 240315"
-
 
 
 def load_character_emotions(character_name, characters_and_emotions):
@@ -78,6 +78,7 @@ def send_request(
     character_emotion,
     cut_method,
     word_count,
+    seed,
     stream="False",
 ):
     urlencoded_text = requests.utils.quote(text)
@@ -97,6 +98,7 @@ def send_request(
         "temperature": temperature,
         "characterEmotion": character_emotion,
         "cut_method": cut_method,
+        "seed": seed,
         "stream": stream,
     }
 
@@ -228,13 +230,13 @@ def change_character_list(
     if auto_emotion:
         return (
             gr.Dropdown(character_names, value=character_name_value, label=i18n("选择角色")),
-            gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感")),
+            gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感"), visible=False),
             gr.Dropdown(["auto"], value="auto", label=i18n("情感列表"), interactive=False),
             characters_and_emotions,
         )
     return (
         gr.Dropdown(character_names, value=character_name_value, label=i18n("选择角色")),
-        gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感")),
+        gr.Checkbox(auto_emotion, label=i18n("是否自动匹配情感"), visible=False),
         gr.Dropdown(emotions, value=emotion_value, label=i18n("情感列表"), interactive=True),
         characters_and_emotions,
     )
@@ -285,18 +287,16 @@ default_endpoint_data = """{
         "temperature": ${temperature},
         "stream": "${stream}",
         "cut_method": "${cut_method}",
+        "seed": ${seed},
         "save_temp": "False"
     }
 }"""
 default_text = i18n("我是一个粉刷匠，粉刷本领强。我要把那新房子，刷得更漂亮。刷了房顶又刷墙，刷子像飞一样。哎呀我的小鼻子，变呀变了样。")
 
 
-
-
-
 with gr.Blocks() as app:
     gr.HTML(
-        f"""<p>{i18n("这是一个由")}<a href="https://space.bilibili.com/66633770">XTer</a>{i18n("提供的推理特化包，当前版本：")}<a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{self_version}</a>{i18n("使用前，请确认后端服务已启动。")}</p>
+        f"""<p>{i18n("这是一个由")}<a href="{i18n("https://space.bilibili.com/66633770")}>XTer</a>{i18n("提供的推理特化包，当前版本：")}<a href="https://www.yuque.com/xter/zibxlp/awo29n8m6e6soru9">{frontend_version}</a>{i18n("使用前，请确认后端服务已启动。")}</p>
             <p>{i18n("吞字漏字属于正常现象，太严重可通过换行或加句号解决，或者更换参考音频（使用模型管理界面）、调节下方batch size滑条。")}</p>
             <p>{i18n("若有疑问或需要进一步了解，可参考文档：")}<a href="{i18n(r"https://www.yuque.com/xter/zibxlp")}">{i18n("点击查看详细文档")}</a>。</p>"""
     )
@@ -306,50 +306,81 @@ with gr.Blocks() as app:
         )
     with gr.Row():
         with gr.Column(scale=2):
-            text_language = gr.Dropdown(
-                translated_language_list,
-                value=translated_language_list[0],
-                label=i18n("文本语言"),
-            )
-            cut_method = gr.Dropdown(
-                translated_cut_method_list,
-                value=translated_cut_method_list[0],
-                label=i18n("切句方式")
-            )
-            (
-                cha_name,
-                auto_emotion_checkbox,
-                character_emotion,
-                characters_and_emotions_,
-            ) = change_character_list(default_character_info_url)
-            characters_and_emotions = gr.State(characters_and_emotions_)
-            scan_character_list = gr.Button(i18n("重新扫描人物列表"), variant="secondary")
-            
+            with gr.Tabs():
+                with gr.Tab(label=i18n("基础选项")):
+                    with gr.Group():
+                        text_language = gr.Dropdown(
+                            translated_language_list,
+                            value=translated_language_list[0],
+                            label=i18n("文本语言"),
+                        )
+                        cut_method = gr.Dropdown(
+                            translated_cut_method_list,
+                            value=translated_cut_method_list[0],
+                            label=i18n("切句方式"),
+                        )
+                    with gr.Group():
+                        (
+                            cha_name,
+                            auto_emotion_checkbox,
+                            character_emotion,
+                            characters_and_emotions_,
+                        ) = change_character_list(default_character_info_url)
+                        characters_and_emotions = gr.State(characters_and_emotions_)
+                        scan_character_list = gr.Button(i18n("扫描人物列表"), variant="secondary")
+
         with gr.Column(scale=1):
-            speed_factor = gr.Slider(
-                minimum=0.25,
-                maximum=4,
-                value=1,
-                label=i18n("语速"),
-                step=0.05,
-                visible=not is_classic,
-            )
-            batch_size = gr.Slider(
-                minimum=1,
-                maximum=35,
-                value=default_batch_size,
-                label=i18n("batch_size，1代表不并行，越大越快，但是越可能爆"),
-                step=1,
-                visible=not is_classic,
-            )
-            word_count = gr.Slider(
-                minimum=5,maximum=500,value=default_word_count,label=i18n("每句允许最大切分字词数"),step=1, visible=True
-            )
-            top_k = gr.Slider(minimum=1, maximum=30, value=6, label=i18n("Top K"), step=1)
-            top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label=i18n("Top P"))
-            temperature = gr.Slider(
-                minimum=0, maximum=1, value=0.8, label=i18n("Temperature")
-            )
+            with gr.Tabs():
+                with gr.Tab(label=i18n("基础选项")):
+                    gr.Textbox(
+                        value=i18n("您在使用经典推理模式，部分选项不可用"),
+                        label=i18n("提示"),
+                        interactive=False,
+                        visible=is_classic,
+                    )
+                    with gr.Group():
+                        speed_factor = gr.Slider(
+                            minimum=0.25,
+                            maximum=4,
+                            value=1,
+                            label=i18n("语速"),
+                            step=0.05,
+                            visible=not is_classic,
+                        )
+                    with gr.Group():
+
+                        batch_size = gr.Slider(
+                            minimum=1,
+                            maximum=35,
+                            value=default_batch_size,
+                            label=i18n("batch_size，1代表不并行，越大越快，但是越可能出问题"),
+                            step=1,
+                            visible=not is_classic,
+                        )
+                        word_count = gr.Slider(
+                            minimum=5,maximum=500,value=default_word_count,label=i18n("每句允许最大切分字词数"),step=1, visible=not is_classic,
+                        )
+
+
+
+                with gr.Tab(label=i18n("高级选项")):
+
+
+                    with gr.Group():
+                        seed = gr.Number(
+                            -1,
+                            label=i18n("种子"),
+                            visible=not is_classic,
+                            interactive=True,
+                        )
+                    
+   
+                    with gr.Group():
+                        top_k = gr.Slider(minimum=1, maximum=30, value=6, label=i18n("Top K"), step=1)
+                        top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label=i18n("Top P"))
+                        temperature = gr.Slider(
+                            minimum=0, maximum=1, value=0.8, label=i18n("Temperature")
+                        )
             batch_size.release(change_batch_size, inputs=[batch_size])
             word_count.release(change_word_count, inputs=[word_count])
             cut_method.input(lambda x: gr.update(visible=(cut_method_dict[x]=="auto_cut")),  [cut_method], [word_count])
@@ -403,8 +434,18 @@ with gr.Blocks() as app:
                 stopStreamButton = gr.Button(i18n("停止播放"), variant="secondary")
             with gr.Row():
                 audioStreamRecieve = gr.Audio(None, label=i18n("音频输出"), interactive=False)
-                
-                
+
+    # 以下是事件绑定
+    app.load(
+        change_character_list,
+        inputs=[character_list_url, cha_name, auto_emotion_checkbox, character_emotion],
+        outputs=[
+            cha_name,
+            auto_emotion_checkbox,
+            character_emotion,
+            characters_and_emotions,
+        ]
+    )            
     sendRequest.click(lambda: gr.update(interactive=False), None, [sendRequest]).then(
         send_request,
         inputs=[
@@ -421,6 +462,7 @@ with gr.Blocks() as app:
             character_emotion,
             cut_method,
             word_count,
+            seed,
             gr.State("False"),
         ],
         outputs=[audioRecieve],
@@ -443,6 +485,7 @@ with gr.Blocks() as app:
             character_emotion,
             cut_method,
             word_count,
+            seed,
             gr.State("True"),
         ],
         outputs=[audioStreamRecieve],

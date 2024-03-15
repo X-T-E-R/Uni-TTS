@@ -23,8 +23,14 @@ Windows users can use our prezip, which includes pre-trained models, a Python en
 
 ## Usage
 
+### TTS
+#### Start with a single gradio file
+- Gradio Application: `src/Exhibition_Webui.py`
+#### Start with backend and frontend mod
 - Flask Backend Program: `src/tts_backend.py`
 - Gradio Frontend Application: `src/TTS_Webui.py`
+- Other Frontend Applications or Services Using Our API 
+### Manage Tools
 - Gradio Model Management Interface: `src/Character_Manager.py`
 
 For API documentation, visit our [Yuque documentation page](https://www.yuque.com/xter/zibxlp/knu8p82lb5ipufqy).
@@ -32,6 +38,7 @@ For API documentation, visit our [Yuque documentation page](https://www.yuque.co
 ## Getting Started
 
 1. Read our [documentation and usage instructions](https://www.yuque.com/xter/zibxlp) before starting.
-2. If you encounter issues, join our community or consult the FAQ. QQ Group: 863760614
+2. Go and see our [huggingface demo](https://huggingface.co/spaces/XTer123/GSVI_ShowPage)
+3. If you encounter issues, join our community or consult the FAQ. QQ Group: 863760614
 
 We look forward to seeing how you use GSVI to bring your creative projects to life!
