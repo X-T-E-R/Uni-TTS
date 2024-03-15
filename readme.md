@@ -1,4 +1,7 @@
 
+[**English**](./readme.md) | [**简体中文**](./docs/cn/readme.md) 
+
+---
 # TTS-for-GPT-SoVITS: GPT-SoVITS Inference Plugin
 
 Welcome to GSVI, an inference-specialized plugin built on top of GPT-SoVITS to enhance your text-to-speech (TTS) experience with a user-friendly API interface. This plugin enriches the [original GPT-SoVITS project](https://github.com/RVC-Boss/GPT-SoVITS), making voice synthesis more accessible and versatile.
@@ -7,7 +10,6 @@ Welcome to GSVI, an inference-specialized plugin built on top of GPT-SoVITS to e
 
 - High-level abstract interface for easy character and emotion selection
 - Comprehensive TTS engine support (speaker selection, speed adjustment, volume control)
-- One-click operation from character import to voice synthesis
 - User-friendly design for everyone
 - High compatibility and extensibility for various platforms and applications (for example: SillyTavern)
 
