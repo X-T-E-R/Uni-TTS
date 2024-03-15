@@ -5,9 +5,16 @@ import requests
 import numpy as np
 from string import Template
 import pyaudio, wave
+
+# 在开头加入路径
+import os, sys
+now_dir = os.getcwd()
+sys.path.append(now_dir)
+# sys.path.append(os.path.join(now_dir, "tools"))
+
 from tools.i18n.i18n import I18nAuto
 
-i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
+i18n = I18nAuto("en_US.json",os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 language_list = ["auto", "zh", "en", "ja", "all_zh", "all_ja"]
 translated_language_list = [i18n("auto"), i18n("zh"), i18n("en"), i18n("ja"), i18n("all_zh"), i18n("all_ja")] # 由于i18n库的特性，这里需要全部手输一遍
