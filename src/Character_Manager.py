@@ -1,6 +1,12 @@
 import gradio as gr
 import os, json
 
+# 在开头加入路径
+import os, sys
+now_dir = os.getcwd()
+sys.path.append(now_dir)
+# sys.path.append(os.path.join(now_dir, "tools"))
+
 from tools.i18n.i18n import I18nAuto
 
 i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
