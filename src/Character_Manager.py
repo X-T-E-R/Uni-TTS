@@ -7,9 +7,7 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 # sys.path.append(os.path.join(now_dir, "tools"))
 
-from tools.i18n.i18n import I18nAuto
 
-i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 global state
 
@@ -37,7 +35,12 @@ if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
         state["models_path"] = config.get("models_path", "trained")
+        locale_language = str(config.get("locale", "auto"))
+        locale_language = None if locale_language.lower() == "auto" else locale_language
+        
+from tools.i18n.i18n import I18nAuto
 
+i18n = I18nAuto(locale_language ,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 # 微软提供的SSML情感表
 emotional_styles = [

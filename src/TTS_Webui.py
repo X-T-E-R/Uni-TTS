@@ -12,27 +12,15 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 # sys.path.append(os.path.join(now_dir, "tools"))
 
-from tools.i18n.i18n import I18nAuto
-
-i18n = I18nAuto("en_US.json",os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
-
-language_list = ["auto", "zh", "en", "ja", "all_zh", "all_ja"]
-translated_language_list = [i18n("auto"), i18n("zh"), i18n("en"), i18n("ja"), i18n("all_zh"), i18n("all_ja")] # 由于i18n库的特性，这里需要全部手输一遍
-language_dict = dict(zip(translated_language_list, language_list))
-
-cut_method_list = ["auto_cut", "cut0", "cut1", "cut2", "cut3", "cut4", "cut5"]
-translated_cut_method_list = [i18n("auto_cut"), i18n("cut0"), i18n("cut1"), i18n("cut2"), i18n("cut3"), i18n("cut4"), i18n("cut5")]
-cut_method_dict = dict(zip(translated_cut_method_list, cut_method_list))
-
-tts_port = 5000
-self_version = "2.2.2 240315"
-
 # 取得模型文件夹路径
 config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
+# 读取config.json
 if os.path.exists(config_path):
     with open(config_path, "r", encoding="utf-8") as f:
         _config = json.load(f)
+        locale_language = str(_config.get("locale", "auto"))
+        locale_language = None if locale_language.lower() == "auto" else locale_language
         tts_port = _config.get("tts_port", 5000)
         default_batch_size = _config.get("batch_size", 10)
         default_word_count = _config.get("max_word_count", 80)
@@ -46,6 +34,22 @@ if os.path.exists(config_path):
         except:
             default_username = "admin"
             default_password = "admin123"
+
+
+from tools.i18n.i18n import I18nAuto
+i18n = I18nAuto(locale_language , os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
+
+language_list = ["auto", "zh", "en", "ja", "all_zh", "all_ja"]
+translated_language_list = [i18n("auto"), i18n("zh"), i18n("en"), i18n("ja"), i18n("all_zh"), i18n("all_ja")] # 由于i18n库的特性，这里需要全部手输一遍
+language_dict = dict(zip(translated_language_list, language_list))
+
+cut_method_list = ["auto_cut", "cut0", "cut1", "cut2", "cut3", "cut4", "cut5"]
+translated_cut_method_list = [i18n("auto_cut"), i18n("cut0"), i18n("cut1"), i18n("cut2"), i18n("cut3"), i18n("cut4"), i18n("cut5")]
+cut_method_dict = dict(zip(translated_cut_method_list, cut_method_list))
+
+tts_port = 5000
+self_version = "2.2.2 240315"
+
 
 
 def load_character_emotions(character_name, characters_and_emotions):

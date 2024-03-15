@@ -22,9 +22,7 @@ is_half = eval(os.environ.get("is_half", "True"))
 
 
 from TTS_infer_pack.TTS import TTS, TTS_Config
-from tools.i18n.i18n import I18nAuto
 
-i18n = I18nAuto(None,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'  # 确保直接启动推理UI时也能够设置。
 
@@ -46,11 +44,16 @@ if os.path.exists(config_path):
                 is_half = False
         if _config.get("half_precision", "auto") != "auto":
             is_half = _config["half_precision"].lower() == "true"
+        locale_language = str(_config.get("locale", "auto"))
+        locale_language = None if locale_language.lower() == "auto" else locale_language
+        
 
         
 print(f"device: {device}, is_half: {is_half}")
 
+from tools.i18n.i18n import I18nAuto
 
+i18n = I18nAuto(locale_language,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 
 
 dict_language = {
