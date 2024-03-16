@@ -58,7 +58,6 @@ translated_language_list = [i18n(language) for language in language_list]
 language_dict = dict(zip(translated_language_list, language_list))
 
 translated_language_dict = dict(zip(language_list, translated_language_list))
-translated_language_dict.update(dict(zip(language_list, language_list)))
 translated_language_dict.update(dict(zip(translated_language_list, translated_language_list)))
 translated_language_dict["多语种混合"] = i18n("auto")
 
@@ -242,7 +241,7 @@ def add_emotion():
     
     ref_wav_path = state['wav_file_found'][0]
     infer_config['emotion_list'].append([f'{unused_emotional_style}',    {
-        'ref_wav_path':ref_wav_path,'prompt_text':split_file_name(ref_wav_path),'prompt_language':'auto'}])
+        'ref_wav_path':ref_wav_path,'prompt_text':split_file_name(ref_wav_path),'prompt_language':translated_language_dict['auto']}])
     return generate_info_bar()
 
 
