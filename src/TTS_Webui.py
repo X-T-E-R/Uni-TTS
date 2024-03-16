@@ -314,11 +314,7 @@ with gr.Blocks() as app:
                             value=translated_language_list[0],
                             label=i18n("文本语言"),
                         )
-                        cut_method = gr.Dropdown(
-                            translated_cut_method_list,
-                            value=translated_cut_method_list[0],
-                            label=i18n("切句方式"),
-                        )
+                        
                     with gr.Group():
                         (
                             cha_name,
@@ -329,7 +325,7 @@ with gr.Blocks() as app:
                         characters_and_emotions = gr.State(characters_and_emotions_)
                         scan_character_list = gr.Button(i18n("扫描人物列表"), variant="secondary")
 
-        with gr.Column(scale=1):
+        with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab(label=i18n("基础选项")):
                     gr.Textbox(
@@ -348,7 +344,11 @@ with gr.Blocks() as app:
                             visible=not is_classic,
                         )
                     with gr.Group():
-
+                        cut_method = gr.Dropdown(
+                            translated_cut_method_list,
+                            value=translated_cut_method_list[0],
+                            label=i18n("切句方式"),
+                        )
                         batch_size = gr.Slider(
                             minimum=1,
                             maximum=35,
