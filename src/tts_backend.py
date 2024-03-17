@@ -42,9 +42,33 @@ except ImportError:
     is_classic = True
 
 if not is_classic:
-    from load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+    from load_infer_info import TTS_instance
+    from config_manager import update_character_info, models_path
 else:
-    from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+    pass
+    # from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+
+
+
+
+max_instances = 1
+tts_instance = [TTS_instance() for _ in range(max_instances)]
+
+def generate_audio(params, tts_instance_id):
+    gen = tts_instance[tts_instance_id].get_wav_from_text_api(**params)
+    return gen
+
+def get_tts_instance_id(cha_name=None):
+    expected_path = os.path.join(models_path, cha_name) if cha_name else None
+    character_name = tts_instance[0].character
+    # 检查cha_name和路径
+    if cha_name and cha_name != character_name and expected_path and os.path.exists(expected_path):
+        character_name = cha_name
+        print(f"Loading character {character_name}")
+        tts_instance[0].load_character(character_name)  
+    elif expected_path and not os.path.exists(expected_path):
+        return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
+    return 0
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -60,6 +84,7 @@ def generate_file_hash(*args):
     for arg in args:
         hash_object.update(str(arg).encode())
     return hash_object.hexdigest()
+
 
 
 
@@ -100,7 +125,8 @@ def get_params_config():
         raise FileNotFoundError("params_config.json not found.")
         
 params_config = get_params_config()        
-            
+
+
 
 @app.route('/tts', methods=['GET', 'POST'])
 @app.route('/voice/vits', methods=['GET', 'POST'])
@@ -109,8 +135,6 @@ params_config = get_params_config()
 @app.route('/voice', methods=['GET', 'POST'])
 @auth.login_required
 def tts():
-    global character_name
-    global models_path
 
     def get_param_value(param_config):
         for alias in param_config['alias']:
@@ -143,15 +167,8 @@ def tts():
             cha_name = list(update_character_info()['characters_and_emotions'])[speaker_id]
         except:
             cha_name = None
-    expected_path = os.path.join(models_path, cha_name) if cha_name else None
-
-    # 检查cha_name和路径
-    if cha_name and cha_name != character_name and expected_path and os.path.exists(expected_path):
-        character_name = cha_name
-        print(f"Loading character {character_name}")
-        load_character(character_name)  
-    elif expected_path and not os.path.exists(expected_path):
-        return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
+    
+    tts_instance_id = get_tts_instance_id()
 
     text_language = get_param_value(params_config['text_language'])
     batch_size = get_param_value(params_config['batch_size'])
@@ -172,7 +189,7 @@ def tts():
     # 下面是已经获得了参数后进行的操作
     if cut_method == "auto_cut":
         cut_method = f"auto_cut_{default_word_count}"
-    text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
+    
     params = {
         "text": text,
         "text_language": text_language,
@@ -189,19 +206,18 @@ def tts():
         params["batch_size"] = batch_size
         params["speed_factor"] = speed
         params["seed"] = seed
-    request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name, seed)
+    request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, cha_name, seed)
     
     format = data.get('format', 'wav')
     if not format in ['wav', 'mp3', 'ogg']:
         return jsonify({"error": "Invalid format. It must be one of 'wav', 'mp3', or 'ogg'."}), 400
     
-   
+    gen = generate_audio(params, tts_instance_id)
     if stream == False:
         if save_temp:
             if request_hash in temp_files:
                 return send_file(temp_files[request_hash], mimetype=f'audio/{format}')
             else:
-                gen = get_wav_from_text_api(**params)
                 sampling_rate, audio_data = next(gen)
                 temp_file_path = tempfile.mktemp(suffix=f'.{format}')
                 with open(temp_file_path, 'wb') as temp_file:
@@ -209,16 +225,14 @@ def tts():
                 temp_files[request_hash] = temp_file_path
                 return send_file(temp_file_path, mimetype=f'audio/{format}')
         else:
-            gen = get_wav_from_text_api(**params)
             sampling_rate, audio_data = next(gen)
             wav = io.BytesIO()
             sf.write(wav, audio_data, sampling_rate, format=format)
             wav.seek(0)
             return Response(wav, mimetype=f'audio/{format}')
     else:
-        gen = get_wav_from_text_api(**params)
+        
         return Response(stream_with_context(gen),  mimetype='audio/wav')
-
 
 if __name__ == '__main__':
     app.run( host='0.0.0.0', port=tts_port)
