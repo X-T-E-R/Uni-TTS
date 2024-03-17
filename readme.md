@@ -1,4 +1,3 @@
-
 [**English**](./readme.md) | [**简体中文**](./docs/cn/readme.md) 
 
 ---
@@ -11,6 +10,7 @@ Welcome to GSVI, an inference-specialized plugin built on top of GPT-SoVITS to e
 - High-level abstract interface for easy character and emotion selection
 - Comprehensive TTS engine support (speaker selection, speed adjustment, volume control)
 - User-friendly design for everyone
+- Simply place the shared character model folder, and you can quickly use it.
 - High compatibility and extensibility for various platforms and applications (for example: SillyTavern)
 
 ## Installation
