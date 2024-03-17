@@ -155,6 +155,8 @@ def tts():
 
     text_language = get_param_value(params_config['text_language'])
     batch_size = get_param_value(params_config['batch_size'])
+    if batch_size is None:
+        batch_size = default_batch_size
     speed = get_param_value(params_config['speed'])
     top_k = get_param_value(params_config['top_k'])
     top_p = get_param_value(params_config['top_p'])

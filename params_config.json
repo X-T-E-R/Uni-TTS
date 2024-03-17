@@ -33,7 +33,7 @@
         "type": "int",
         "description": "Batch size for processing.",
         "alias": ["batch_size", "batch"],
-        "default": 1
+        "default": null
     },
     "speed": {
         "type": "float",
