@@ -2,13 +2,13 @@
     "text": {
         "type": "string",
         "description": "The text to be synthesized.",
-        "alias": ["text"],
+        "alias": ["text", "txt", "tex", "t"],
         "default": ""
     },
     "cha_name": {
         "type": "string",
         "description": "Character name for the model.",
-        "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker" ],
+        "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker", "id", "lan"],
         "default": null
     },
     "character_emotion": {
@@ -20,7 +20,7 @@
     "text_language": {
         "type": "string",
         "description": "Language of the text.",
-        "alias": ["text_language", "lang"],
+        "alias": ["text_language", "lang", "language"],
         "default": "auto"
     },
     "batch_size": {
@@ -32,7 +32,7 @@
     "speed": {
         "type": "float",
         "description": "Speed factor for synthesis.",
-        "alias": ["speed", "speed_factor"],
+        "alias": ["speed", "speed_factor", "spd"],
         "default": 1.0
     },
     "top_k": {
@@ -62,7 +62,7 @@
     "stream": {
         "type": "bool",
         "description": "Stream the audio or not.",
-        "alias": ["stream"],
+        "alias": ["stream", "streaming"],
         "default": false
     },
     "save_temp": {

@@ -92,6 +92,9 @@ params_config = get_params_config()
             
 
 @app.route('/tts', methods=['GET', 'POST'])
+@app.route('/voice/vits', methods=['GET', 'POST'])
+@app.route('/text2audio', methods=['GET', 'POST'])
+@app.route('/t2s', methods=['GET', 'POST'])
 @auth.login_required
 def tts():
     global character_name
