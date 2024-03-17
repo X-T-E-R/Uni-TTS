@@ -11,6 +11,12 @@
         "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker"  ],
         "default": null
     },
+    "speaker_id": {
+        "type": "int",
+        "description": "Speaker ID for the model.",
+        "alias": ["speaker_id",  "id"],
+        "default": null
+    },
     "character_emotion": {
         "type": "string",
         "description": "Emotion of the character.",

@@ -79,6 +79,15 @@ def character_list():
     res = jsonify(update_character_info()['characters_and_emotions'])
     return res
 
+@app.route('/voice/speakers', methods=['GET'])
+def speakers():
+    speaker_dict = update_character_info()['characters_and_emotions']
+    speaker_list = list(speaker_dict.keys())
+    res = {
+        "VITS": speaker_list,
+        "GSVI": speaker_list
+    }
+    return jsonify(res)
 params_config = {}
 
 def get_params_config():
@@ -95,6 +104,7 @@ params_config = get_params_config()
 @app.route('/voice/vits', methods=['GET', 'POST'])
 @app.route('/text2audio', methods=['GET', 'POST'])
 @app.route('/t2s', methods=['GET', 'POST'])
+@app.route('/voice', methods=['GET', 'POST'])
 @auth.login_required
 def tts():
     global character_name
@@ -125,6 +135,9 @@ def tts():
     text = get_param_value(params_config['text'])
     
     cha_name = get_param_value(params_config['cha_name'])
+    speaker_id = get_param_value(params_config['speaker_id'])
+    if cha_name is None and speaker_id is not None:
+        cha_name = list(update_character_info()['characters_and_emotions'])[speaker_id]
     expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
     # 检查cha_name和路径
