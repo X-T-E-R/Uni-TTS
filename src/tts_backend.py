@@ -79,6 +79,17 @@ def character_list():
     res = jsonify(update_character_info()['characters_and_emotions'])
     return res
 
+params_config = {}
+
+def get_params_config():
+    try:
+        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "params_config.json"), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        raise FileNotFoundError("params_config.json not found.")
+        
+params_config = get_params_config()        
+            
 
 @app.route('/tts', methods=['GET', 'POST'])
 @auth.login_required
@@ -86,15 +97,31 @@ def tts():
     global character_name
     global models_path
 
+    def get_param_value(param_config):
+        for alias in param_config['alias']:
+            if alias in data:
+                if param_config['type'] == 'int':
+                    return int(data[alias])
+                elif param_config['type'] == 'float':
+                    return float(data[alias])
+                elif param_config['type'] == 'bool':
+                    return str(data[alias]).lower() in ('true', '1', 't', 'y', 'yes', "allow", "allowed")
+                else:  # 默认为字符串
+                    return urllib.parse.unquote(data[alias]).lower()
+        return param_config['default']
     # 尝试从JSON中获取数据，如果不是JSON，则从查询参数中获取
     if request.is_json:
         data = request.json
     else:
         data = request.args
-
-    text = urllib.parse.unquote(data.get('text', ''))
-    text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
-    cha_name = data.get('cha_name', None)
+        
+    if params_config is None:
+        raise FileNotFoundError("params_config.json not found.")
+    
+    # 参数提取
+    text = get_param_value(params_config['text'])
+    
+    cha_name = get_param_value(params_config['cha_name'])
     expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
     # 检查cha_name和路径
@@ -105,24 +132,24 @@ def tts():
     elif expected_path and not os.path.exists(expected_path):
         return jsonify({"error": f"Directory {expected_path} does not exist. Using the current character."}), 400
 
-    text_language = str(data.get('text_language', '多语种混合')).lower()
-    try:
-        batch_size = int(data.get('batch_size', default_batch_size))
-        speed_factor = float(data.get('speed', 1.0))
-        top_k = int(data.get('top_k', 6))
-        top_p = float(data.get('top_p', 0.8))
-        temperature = float(data.get('temperature', 0.8))
-        seed = int(data.get('seed', -1))
-    except ValueError:
-        return jsonify({"error": "Invalid parameters. They must be numbers."}), 400
-    stream = str(data.get('stream', 'False')).lower() in ('true', '1', 't', 'y', 'yes')
-    save_temp = str(data.get('save_temp', 'False')).lower() in ('true', '1', 't', 'y', 'yes')
-    cut_method = str(data.get('cut_method', 'auto_cut')).lower()
-    character_emotion = data.get('character_emotion', 'default')
-
+    text_language = get_param_value(params_config['text_language'])
+    batch_size = get_param_value(params_config['batch_size'])
+    speed = get_param_value(params_config['speed'])
+    top_k = get_param_value(params_config['top_k'])
+    top_p = get_param_value(params_config['top_p'])
+    temperature = get_param_value(params_config['temperature'])
+    seed = get_param_value(params_config['seed'])
+    stream = get_param_value(params_config['stream'])
+    save_temp = get_param_value(params_config['save_temp'])
+    cut_method = get_param_value(params_config['cut_method'])
+    character_emotion = get_param_value(params_config['character_emotion'])
+    format = get_param_value(params_config['format'])
+    
+   
+    # 下面是已经获得了参数后进行的操作
     if cut_method == "auto_cut":
         cut_method = f"auto_cut_{default_word_count}"
-    
+    text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
     params = {
         "text": text,
         "text_language": text_language,
@@ -137,7 +164,7 @@ def tts():
     # 如果不是经典模式，则添加额外的参数
     if not is_classic:
         params["batch_size"] = batch_size
-        params["speed_factor"] = speed_factor
+        params["speed_factor"] = speed
         params["seed"] = seed
     request_hash = generate_file_hash(text, text_language, top_k, top_p, temperature, character_emotion, character_name, seed)
     

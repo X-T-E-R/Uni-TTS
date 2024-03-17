@@ -1,0 +1,86 @@
+{
+    "text": {
+        "type": "string",
+        "description": "The text to be synthesized.",
+        "alias": ["text"],
+        "default": ""
+    },
+    "cha_name": {
+        "type": "string",
+        "description": "Character name for the model.",
+        "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker" ],
+        "default": null
+    },
+    "character_emotion": {
+        "type": "string",
+        "description": "Emotion of the character.",
+        "alias": ["character_emotion", "emotion"],
+        "default": "default"
+    },
+    "text_language": {
+        "type": "string",
+        "description": "Language of the text.",
+        "alias": ["text_language", "lang"],
+        "default": "auto"
+    },
+    "batch_size": {
+        "type": "int",
+        "description": "Batch size for processing.",
+        "alias": ["batch_size", "batch"],
+        "default": 1
+    },
+    "speed": {
+        "type": "float",
+        "description": "Speed factor for synthesis.",
+        "alias": ["speed", "speed_factor"],
+        "default": 1.0
+    },
+    "top_k": {
+        "type": "int",
+        "description": "Top K parameter for sampling.",
+        "alias": ["top_k"],
+        "default": 6
+    },
+    "top_p": {
+        "type": "float",
+        "description": "Top P parameter for sampling.",
+        "alias": ["top_p"],
+        "default": 0.8
+    },
+    "temperature": {
+        "type": "float",
+        "description": "Temperature for sampling.",
+        "alias": ["temperature"],
+        "default": 0.8
+    },
+    "seed": {
+        "type": "int",
+        "description": "Seed for randomness.",
+        "alias": ["seed"],
+        "default": -1
+    },
+    "stream": {
+        "type": "bool",
+        "description": "Stream the audio or not.",
+        "alias": ["stream"],
+        "default": false
+    },
+    "save_temp": {
+        "type": "bool",
+        "description": "Save the output temporarily.",
+        "alias": ["save_temp", "save"],
+        "default": false
+    },
+    "cut_method": {
+        "type": "string",
+        "description": "Method for text cutting.",
+        "alias": ["cut_method", "cut"],
+        "default": "auto_cut"
+    },
+    "format": {
+        "type": "string",
+        "description": "Format of the output audio.",
+        "alias": ["format"],
+        "default": "wav"
+    }
+}
