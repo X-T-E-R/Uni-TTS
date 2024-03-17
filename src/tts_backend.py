@@ -93,6 +93,7 @@ def tts():
         data = request.args
 
     text = urllib.parse.unquote(data.get('text', ''))
+    text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
     cha_name = data.get('cha_name', None)
     expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
