@@ -25,12 +25,12 @@ Windows users can use our prezip, which includes pre-trained models, a Python en
 
 ### TTS
 #### Start with a single gradio file
-- Gradio Application: `src/Exhibition_Webui.py`
+- Gradio Application: `../app.py`  (In the root of GSVI)
 #### Start with backend and frontend mod
 - Flask Backend Program: `src/tts_backend.py`
 - Gradio Frontend Application: `src/TTS_Webui.py`
 - Other Frontend Applications or Services Using Our API 
-### Manage Tools
+### Model Management
 - Gradio Model Management Interface: `src/Character_Manager.py`
 
 For API documentation, visit our [Yuque documentation page](https://www.yuque.com/xter/zibxlp/knu8p82lb5ipufqy).
