@@ -82,10 +82,12 @@ def character_list():
 @app.route('/voice/speakers', methods=['GET'])
 def speakers():
     speaker_dict = update_character_info()['characters_and_emotions']
-    speaker_list = list(speaker_dict.keys())
+    name_list = list(speaker_dict.keys())
+    speaker_list = [{"id": i, "name": name_list[i], "lang":["zh","en","ja"]} for i in range(len(name_list))]
     res = {
         "VITS": speaker_list,
-        "GSVI": speaker_list
+        "GSVI": speaker_list,
+        "GPT-SOVITS": speaker_list
     }
     return jsonify(res)
 params_config = {}
@@ -137,7 +139,10 @@ def tts():
     cha_name = get_param_value(params_config['cha_name'])
     speaker_id = get_param_value(params_config['speaker_id'])
     if cha_name is None and speaker_id is not None:
-        cha_name = list(update_character_info()['characters_and_emotions'])[speaker_id]
+        try:
+            cha_name = list(update_character_info()['characters_and_emotions'])[speaker_id]
+        except:
+            cha_name = None
     expected_path = os.path.join(models_path, cha_name) if cha_name else None
 
     # 检查cha_name和路径
