@@ -1,4 +1,4 @@
-frontend_version = "2.3.1 240319"
+frontend_version = "2.3.1 240320"
 
 from datetime import datetime
 import gradio as gr
