@@ -94,6 +94,7 @@ def update_character_info():
         default_character = ""
     characters_and_emotions = {}
     for character_subdir in [f for f in os.listdir(models_path) if os.path.isdir(os.path.join(models_path, f))]:
+        character_subdir = character_subdir.lower()
         if os.path.exists(os.path.join(models_path, character_subdir, "infer_config.json")):
             try:
                 with open(os.path.join(models_path, character_subdir, "infer_config.json"), "r", encoding='utf-8') as f:
@@ -139,33 +140,34 @@ def get_device_info():
         return device, is_half
     
 def get_deflaut_character_name():
-    import os
-    import json
+    global default_character
+    try:
+        return default_character
+    except:
+        character_info_path = os.path.join(models_path, "character_info.json")
+        default_character = None
 
-    character_info_path = os.path.join(models_path, "character_info.json")
-    default_character = None
+        if os.path.exists(character_info_path):
+            with open(character_info_path, "r", encoding='utf-8') as f:
+                try:
+                    character_info = json.load(f)
+                    default_character = character_info.get("deflaut_character")
+                except:
+                    pass
+        if default_character in ["", None, "default"]:
+            default_character=None
+        if default_character is None or not os.path.exists(os.path.join(models_path, default_character)):
+            # List all items in models_path
+            all_items = os.listdir(models_path)
+            
+            # Filter out only directories (folders) from all_items
+            trained_folders = [item for item in all_items if os.path.isdir(os.path.join(models_path, item))]
+            
+            # If there are any directories found, set the first one as the default character
+            if trained_folders:
+                default_character = trained_folders[0]
 
-    if os.path.exists(character_info_path):
-        with open(character_info_path, "r", encoding='utf-8') as f:
-            try:
-                character_info = json.load(f)
-                default_character = character_info.get("deflaut_character")
-            except:
-                pass
-    if default_character in ["", None, "default"]:
-        default_character=None
-    if default_character is None or not os.path.exists(os.path.join(models_path, default_character)):
-        # List all items in models_path
-        all_items = os.listdir(models_path)
-        
-        # Filter out only directories (folders) from all_items
-        trained_folders = [item for item in all_items if os.path.isdir(os.path.join(models_path, item))]
-        
-        # If there are any directories found, set the first one as the default character
-        if trained_folders:
-            default_character = trained_folders[0]
-
-    return default_character
+        return default_character
 
 def remove_character_path(full_path,character_path):
     # 从full_path中移除character_path部分

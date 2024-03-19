@@ -2,6 +2,7 @@
 
 import io, wave
 import os, json, sys
+import threading
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
@@ -35,7 +36,9 @@ class TTS_instance:
         if character_name is None:
             character_name = get_deflaut_character_name()
         self.character = character_name
+        self.lock = threading.Lock()
         self.load_character(character_name)
+        
         
     def inference(self, text, text_lang, 
               ref_audio_path, prompt_text, 
@@ -90,6 +93,7 @@ class TTS_instance:
                 pass
 
     def load_character(self, cha_name):
+
         character_path=os.path.join(models_path,cha_name)
         try:
             # 加载配置
@@ -110,9 +114,10 @@ class TTS_instance:
                 raise Exception("找不到模型文件！请把有效模型放置在模型文件夹下，确保其中至少有pth、ckpt和wav三种文件。")
         # 修改权重
         self.character = cha_name
-        self.tts_pipline.init_t2s_weights(gpt_path)
-        self.tts_pipline.init_vits_weights(sovits_path)
-        print(f"加载角色成功: {cha_name}")
+        with self.lock:
+            self.tts_pipline.init_t2s_weights(gpt_path)
+            self.tts_pipline.init_vits_weights(sovits_path)
+            print(f"加载角色成功: {cha_name}")
 
 
     def match_character_emotion(self, character_path):
@@ -135,6 +140,7 @@ class TTS_instance:
         seed=-1,
         stream=False,
     ):
+        
         text = text.replace("\r", "\n").replace("<br>", "\n").replace("\t", " ")
         text = text.replace("……","。").replace("…","。").replace("\n\n","\n").replace("。\n","\n").replace("\n", "。\n")
         # 加载环境配置
@@ -171,8 +177,8 @@ class TTS_instance:
         except:
             text_language = "auto"
             prompt_language = "auto"
-
         ref_free = False
+        
         params = {
             "text": text,
             "text_lang": text_language,
@@ -192,10 +198,11 @@ class TTS_instance:
         }
         # 调用原始的get_tts_wav函数
         # 注意：这里假设get_tts_wav函数及其所需的其它依赖已经定义并可用
-        if stream == False:
-            return self.tts_pipline.run(params)
-        else:
-            return self.get_streaming_tts_wav(params)
+        with self.lock:
+            if stream == False:
+                return self.tts_pipline.run(params)
+            else:
+                return self.get_streaming_tts_wav(params)
 
 
 

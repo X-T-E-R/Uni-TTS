@@ -8,7 +8,7 @@
     "cha_name": {
         "type": "string",
         "description": "Character name for the model.",
-        "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker"  ],
+        "alias": ["cha_name", "character", "model_name", "cha", "spk" , "speaker"],
         "default": null
     },
     "speaker_id": {
