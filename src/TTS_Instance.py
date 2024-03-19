@@ -35,7 +35,7 @@ class TTS_instance:
         self.tts_pipline = TTS(tts_config)
         if character_name is None:
             character_name = get_deflaut_character_name()
-        self.character = character_name
+        self.character = None
         self.lock = threading.Lock()
         self.load_character(character_name)
         

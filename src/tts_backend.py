@@ -70,7 +70,7 @@ def get_tts_instance_id(cha_name=None):
             cha_name = tts_instances[0].character
             return 0
         
-    
+    # 还需要修正，哪怕是用lock
     # 寻找一个已经加载的实例，如果没有找到，则返回最少使用的实例
     for tts_instance in tts_instances:
         if tts_instance.character == cha_name:
