@@ -93,8 +93,12 @@ class TTS_instance:
                 pass
 
     def load_character(self, cha_name):
+        if cha_name in [self.character, "", None]:
+            return
 
         character_path=os.path.join(models_path,cha_name)
+        if not os.path.exists(character_path):
+            raise Exception(f"Cant find character folder: {cha_name}")
         try:
             # 加载配置
             config = load_infer_config(character_path)

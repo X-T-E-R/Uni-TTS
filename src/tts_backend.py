@@ -1,4 +1,4 @@
-backend_version = "2.2.4 240318"
+backend_version = "2.3.1 240318"
 print(f"Backend version: {backend_version}")
 
 # 在开头加入路径
@@ -40,21 +40,20 @@ try:
     from TTS_infer_pack.TTS import TTS
 except ImportError:
     is_classic = True
+    pass
 
 if not is_classic:
     from TTS_Instance import TTS_instance
     from config_manager import update_character_info, models_path, get_deflaut_character_name
+    text_count = {}
+    for character in update_character_info()['characters_and_emotions']:
+        text_count[character.lower()] = 0
+    max_instances = 1
+    tts_instances = [TTS_instance() for _ in range(max_instances)]
 else:
+    from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
     pass
-    # from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
 
-
-text_count = {}
-for character in update_character_info()['characters_and_emotions']:
-    text_count[character.lower()] = 0
-
-max_instances = 1
-tts_instances = [TTS_instance() for _ in range(max_instances)]
 
 def generate_audio(cha_name,params):
     tts_instance_id = get_tts_instance_id(cha_name)
@@ -64,9 +63,6 @@ def generate_audio(cha_name,params):
     return gen
 
 def get_tts_instance_id(cha_name=None):
-    
-    
-
     if cha_name is None or not os.path.exists(os.path.join(models_path, cha_name)):
         if max_instances>1:
             cha_name = get_deflaut_character_name()
@@ -246,8 +242,14 @@ def tts():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
     
-
-    gen = generate_audio(cha_name, params)
+    if not is_classic:
+        gen = generate_audio(cha_name, params)
+    else:
+        global character_name
+        if cha_name is not None and cha_name != character_name and os.path.exists(os.path.join(models_path, cha_name)):
+            character_name = cha_name
+            load_character(character_name)
+        gen = get_wav_from_text_api(**params)
     if stream == False:
         if save_temp:
             if request_hash in temp_files:
