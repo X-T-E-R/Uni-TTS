@@ -94,7 +94,7 @@ def update_character_info():
         default_character = ""
     characters_and_emotions = {}
     for character_subdir in [f for f in os.listdir(models_path) if os.path.isdir(os.path.join(models_path, f))]:
-        character_subdir = character_subdir.lower()
+        character_subdir = character_subdir
         if os.path.exists(os.path.join(models_path, character_subdir, "infer_config.json")):
             try:
                 with open(os.path.join(models_path, character_subdir, "infer_config.json"), "r", encoding='utf-8') as f:
