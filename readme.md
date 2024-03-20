@@ -42,3 +42,8 @@ For API documentation, visit our [Yuque documentation page](https://www.yuque.co
 3. If you encounter issues, join our community or consult the FAQ. QQ Group: 863760614
 
 We look forward to seeing how you use GSVI to bring your creative projects to life!
+
+---
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=X-T-E-R/TTS-for-GPT-soVITS&type=Date)](https://star-history.com/#X-T-E-R/TTS-for-GPT-soVITS&Date)
