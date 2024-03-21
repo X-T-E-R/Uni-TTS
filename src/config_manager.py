@@ -3,12 +3,31 @@ import torch
 
 # 取得模型文件夹路径
 global models_path
-models_path = "trained"
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-if os.path.exists(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-        models_path = config.get("models_path", "trained")
+
+
+class Inference_Config():
+    def __init__(self):
+        self.config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+        self.models_path = "trained"
+        if os.path.exists(self.config_path):
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                self.models_path = config.get("models_path", "trained")
+                self.tts_port = config.get("tts_port", 5000)
+                self.default_batch_size = config.get("batch_size", 1)
+                self.default_word_count = config.get("max_word_count", 50)
+                self.enable_auth = config.get("enable_auth", "false").lower() == "true"
+                self.is_classic = config.get("classic_inference", "false").lower() == "true"
+                self.is_share = config.get("is_share", "false").lower() == "true"
+                self.max_text_length = config.get("max_text_length", -1)
+                locale_language = str(config.get("locale", "auto"))
+                self.locale_language = None if locale_language.lower() == "auto" else locale_language
+                if self.enable_auth:
+                    self.users = config.get("user", {})
+
+inference_config = Inference_Config()
+
+models_path = inference_config.models_path
 
 def load_infer_config(character_path):
     config_path = os.path.join(character_path, "infer_config.json")

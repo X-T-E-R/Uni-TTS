@@ -1,4 +1,4 @@
-frontend_version = "2.3.1 240320"
+frontend_version = "2.3.2 240322"
 
 from datetime import datetime
 import gradio as gr
@@ -6,7 +6,7 @@ import json, os
 import requests
 import numpy as np
 from string import Template
-import pyaudio, wave
+
 
 # 在开头加入路径
 import os, sys
@@ -14,28 +14,28 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 # sys.path.append(os.path.join(now_dir, "tools"))
 
-# 取得模型文件夹路径
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
 # 读取config.json
-if os.path.exists(config_path):
-    with open(config_path, "r", encoding="utf-8") as f:
-        _config = json.load(f)
-        locale_language = str(_config.get("locale", "auto"))
-        locale_language = None if locale_language.lower() == "auto" else locale_language
-        tts_port = _config.get("tts_port", 5000)
-        default_batch_size = _config.get("batch_size", 10)
-        default_word_count = _config.get("max_word_count", 80)
-        is_share = _config.get("is_share", "false").lower() == "true"
-        is_classic = _config.get("classic_inference", "false").lower() == "true"
-        enable_auth = _config.get("enable_auth", "false").lower() == "true"
-        users = _config.get("user", {})
-        try:
-            default_username = list(users.keys())[0]
-            default_password = users[default_username]
-        except:
-            default_username = "admin"
-            default_password = "admin123"
+from Inference.src.config_manager import Inference_Config
+inference_config = Inference_Config()
+
+config_path = inference_config.config_path
+locale_language = inference_config.locale_language
+tts_port = inference_config.tts_port
+default_batch_size = inference_config.default_batch_size
+default_word_count = inference_config.default_word_count
+enable_auth = inference_config.enable_auth
+is_classic = inference_config.is_classic
+is_share = inference_config.is_share
+models_path = inference_config.models_path
+default_username, default_password = "admin", "admin123"
+if enable_auth:
+    users = inference_config.users
+    try:
+        default_username = list(users.keys())[0]
+        default_password = users[default_username]
+    except:
+        pass
 
 
 from tools.i18n.i18n import I18nAuto
@@ -58,10 +58,16 @@ def load_character_emotions(character_name, characters_and_emotions):
 
     return gr.Dropdown(emotion_options, value="default")
 
+pyaudio_installed = False
 
-global p, streamAudio
-p = pyaudio.PyAudio()
-streamAudio = None
+try:
+    import pyaudio, wave
+    global p, streamAudio
+    p = pyaudio.PyAudio()
+    streamAudio = None
+    pyaudio_installed = True
+except:
+    pyaudio_installed = False
 
 
 def send_request(
@@ -376,7 +382,7 @@ with gr.Blocks() as app:
                     
    
                     with gr.Group():
-                        top_k = gr.Slider(minimum=1, maximum=30, value=6, label=i18n("Top K"), step=1)
+                        top_k = gr.Slider(minimum=1, maximum=30, value=3, label=i18n("Top K"), step=1)
                         top_p = gr.Slider(minimum=0, maximum=1, value=0.8, label=i18n("Top P"))
                         temperature = gr.Slider(
                             minimum=0, maximum=1, value=0.8, label=i18n("Temperature")
@@ -427,13 +433,20 @@ with gr.Blocks() as app:
                     None, label=i18n("音频输出"), type="filepath", streaming=False
                 )
         with gr.Tab(label=i18n("流式音频")):
-            with gr.Row():
-                sendStreamRequest = gr.Button(
-                    i18n("发送并开始播放"), variant="primary", interactive=True
+            if pyaudio_installed:
+                with gr.Row():
+                    sendStreamRequest = gr.Button(
+                        i18n("发送并开始播放"), variant="primary", interactive=True
+                    )
+                    stopStreamButton = gr.Button(i18n("停止播放"), variant="secondary")
+                with gr.Row():
+                    audioStreamRecieve = gr.Audio(None, label=i18n("音频输出"), interactive=False)
+            else:
+                gr.Textbox(
+                    value=i18n("您的环境不支持pyaudio，无法使用流式音频功能，您可以尝试运行1.bat来安装pyaudio"),
+                    label=i18n("提示"),
+                    interactive=False,
                 )
-                stopStreamButton = gr.Button(i18n("停止播放"), variant="secondary")
-            with gr.Row():
-                audioStreamRecieve = gr.Audio(None, label=i18n("音频输出"), interactive=False)
 
     # 以下是事件绑定
     app.load(
@@ -467,32 +480,33 @@ with gr.Blocks() as app:
         ],
         outputs=[audioRecieve],
     ).then(lambda: gr.update(interactive=True), None, [sendRequest])
-    sendStreamRequest.click(
-        lambda: gr.update(interactive=False), None, [sendStreamRequest]
-    ).then(
-        send_request,
-        inputs=[
-            endpoint,
-            endpoint_data,
-            text,
-            cha_name,
-            text_language,
-            batch_size,
-            speed_factor,
-            top_k,
-            top_p,
-            temperature,
-            character_emotion,
-            cut_method,
-            word_count,
-            seed,
-            gr.State("True"),
-        ],
-        outputs=[audioStreamRecieve],
-    ).then(
-        lambda: gr.update(interactive=True), None, [sendStreamRequest]
-    )
-    stopStreamButton.click(stopAudioPlay, inputs=[])
+    if pyaudio_installed:
+        sendStreamRequest.click(
+            lambda: gr.update(interactive=False), None, [sendStreamRequest]
+        ).then(
+            send_request,
+            inputs=[
+                endpoint,
+                endpoint_data,
+                text,
+                cha_name,
+                text_language,
+                batch_size,
+                speed_factor,
+                top_k,
+                top_p,
+                temperature,
+                character_emotion,
+                cut_method,
+                word_count,
+                seed,
+                gr.State("True"),
+            ],
+            outputs=[audioStreamRecieve],
+        ).then(
+            lambda: gr.update(interactive=True), None, [sendStreamRequest]
+        )
+        stopStreamButton.click(stopAudioPlay, inputs=[])
     cha_name.change(
         load_character_emotions,
         inputs=[cha_name, characters_and_emotions],

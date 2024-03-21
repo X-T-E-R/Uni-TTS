@@ -6,9 +6,9 @@ import threading
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
+# sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
 
-from config_manager import load_infer_config, auto_generate_infer_config, models_path, get_device_info, get_deflaut_character_name
+from Inference.src.config_manager import load_infer_config, auto_generate_infer_config, models_path, get_device_info, get_deflaut_character_name
         
 
 dict_language = {
@@ -26,7 +26,7 @@ dict_language = {
     "all_ja": "all_ja",
 }
 
-from TTS_infer_pack.TTS import TTS, TTS_Config
+from GPT_SoVITS.TTS_infer_pack.TTS import TTS, TTS_Config
 
 class TTS_instance:
     def __init__(self, character_name = None):

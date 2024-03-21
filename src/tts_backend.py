@@ -1,11 +1,18 @@
-backend_version = "2.3.1 240320"
+backend_version = "2.3.2 240322"
 print(f"Backend version: {backend_version}")
 
 # 在开头加入路径
 import os, sys
+
+# 尝试清空含有GPT_SoVITS的路径
+for path in sys.path:
+    if path.find(r"GPT_SoVITS") != -1:
+        sys.path.remove(path)
+
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
+# sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import soundfile as sf
 from flask import Flask, request, Response, jsonify, stream_with_context,send_file
@@ -17,41 +24,37 @@ import tempfile
 import hashlib, json
 
 # 将当前文件所在的目录添加到 sys.path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 
 # 从配置文件读取配置
-config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-enable_auth = False
-USERS = {}
+from Inference.src.config_manager import Inference_Config
+inference_config = Inference_Config()
 
-if os.path.exists(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        _config = json.load(f)
-        tts_port = _config.get("tts_port", 5000)
-        default_batch_size = _config.get("batch_size", 1)
-        default_word_count = _config.get("max_word_count", 50)
-        enable_auth = _config.get("enable_auth", "false").lower() == "true"
-        is_classic = _config.get("classic_inference", "false").lower() == "true"
-        if enable_auth:
-            print("启用了身份验证")
-            USERS = _config.get("user", {})
+tts_port = inference_config.tts_port
+default_batch_size = inference_config.default_batch_size
+default_word_count = inference_config.default_word_count
+enable_auth = inference_config.enable_auth
+is_classic = inference_config.is_classic
+models_path = inference_config.models_path
+if enable_auth:
+    users = inference_config.users
 
 try:
-    from TTS_infer_pack.TTS import TTS
+    from GPT_SoVITS.TTS_infer_pack.TTS import TTS
 except ImportError:
     is_classic = True
     pass
 
 if not is_classic:
-    from TTS_Instance import TTS_instance
-    from config_manager import update_character_info, models_path, get_deflaut_character_name
+    from Inference.src.TTS_Instance import TTS_instance
+    from Inference.src.config_manager import update_character_info,  get_deflaut_character_name
     text_count = {}
     for character in update_character_info()['characters_and_emotions']:
         text_count[character.lower()] = 0
     max_instances = 1
     tts_instances = [TTS_instance() for _ in range(max_instances)]
 else:
-    from classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api, models_path, update_character_info
+    from Inference.src.classic_inference.classic_load_infer_info import load_character, character_name, get_wav_from_text_api,  update_character_info
     pass
 
 
@@ -112,7 +115,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def verify_password(username, password):
     if not enable_auth:
         return True  # 如果没有启用验证，则允许访问
-    return USERS.get(username) == password
+    return users.get(username) == password
 
 
 @app.route('/character_list', methods=['GET'])
