@@ -51,5 +51,38 @@ Windows用户可以使用我们的预打包版本，其中包括预训练的模�
 - **探索文档**：我们强烈建议您在开始使用之前，仔细阅读我们的文档和使用说明。这将帮助您更好地了解所有功能和可用的定制选项。文档链接：[https://www.yuque.com/xter/zibxlp](https://www.yuque.com/xter/zibxlp)
 - **社区支持**：如果在安装或使用过程中遇到任何问题，不要犹豫加入我们的社区或查阅FAQ。我们的社区非常活跃，很多经验丰富的用户和开发者都乐于帮助新手。QQ：`863760614`
 
+## Credits
+
+这是一个适用于 [GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS) 的插件
+部分代码（比如经典推理部分）沿用了原始项目。
+
+特别感谢以下项目
+
+### Theoretical
+- [ar-vits](https://github.com/innnky/ar-vits)
+- [SoundStorm](https://github.com/yangdongchao/SoundStorm/tree/master/soundstorm/s1/AR)
+- [vits](https://github.com/jaywalnut310/vits)
+- [TransferTTS](https://github.com/hcy71o/TransferTTS/blob/master/models.py#L556)
+- [contentvec](https://github.com/auspicious3000/contentvec/)
+- [hifi-gan](https://github.com/jik876/hifi-gan)
+- [fish-speech](https://github.com/fishaudio/fish-speech/blob/main/tools/llama/generate.py#L41)
+### Pretrained Models
+- [Chinese Speech Pretrain](https://github.com/TencentGameMate/chinese_speech_pretrain)
+- [Chinese-Roberta-WWM-Ext-Large](https://huggingface.co/hfl/chinese-roberta-wwm-ext-large)
+### Text Frontend for Inference
+- [paddlespeech zh_normalization](https://github.com/PaddlePaddle/PaddleSpeech/tree/develop/paddlespeech/t2s/frontend/zh_normalization)
+- [LangSegment](https://github.com/juntaosun/LangSegment)
+### WebUI Tools
+- [FFmpeg](https://github.com/FFmpeg/FFmpeg)
+- [gradio](https://github.com/gradio-app/gradio))
+  
+## Thanks to all contributors for their efforts
+
+
+---
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=X-T-E-R/TTS-for-GPT-soVITS&type=Date)](https://star-history.com/#X-T-E-R/TTS-for-GPT-soVITS&Date)
+
 通过遵循这些步骤，您应该能够轻松地开始使用我们的项目，无论是进行语音合成实验，还是开发自己的应用。我们期待看到您如何使用GSVI来实现您的创意和项目！
 
