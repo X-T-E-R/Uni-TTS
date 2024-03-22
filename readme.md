@@ -43,6 +43,34 @@ For API documentation, visit our [Yuque documentation page](https://www.yuque.co
 
 We look forward to seeing how you use GSVI to bring your creative projects to life!
 
+## Credits
+
+This fork is a plugin for [GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS) project. 
+Some of the codes (e.g. the classic inference part) are using its original code.
+
+Special thanks to the following projects and contributors:
+
+### Theoretical
+- [ar-vits](https://github.com/innnky/ar-vits)
+- [SoundStorm](https://github.com/yangdongchao/SoundStorm/tree/master/soundstorm/s1/AR)
+- [vits](https://github.com/jaywalnut310/vits)
+- [TransferTTS](https://github.com/hcy71o/TransferTTS/blob/master/models.py#L556)
+- [contentvec](https://github.com/auspicious3000/contentvec/)
+- [hifi-gan](https://github.com/jik876/hifi-gan)
+- [fish-speech](https://github.com/fishaudio/fish-speech/blob/main/tools/llama/generate.py#L41)
+### Pretrained Models
+- [Chinese Speech Pretrain](https://github.com/TencentGameMate/chinese_speech_pretrain)
+- [Chinese-Roberta-WWM-Ext-Large](https://huggingface.co/hfl/chinese-roberta-wwm-ext-large)
+### Text Frontend for Inference
+- [paddlespeech zh_normalization](https://github.com/PaddlePaddle/PaddleSpeech/tree/develop/paddlespeech/t2s/frontend/zh_normalization)
+- [LangSegment](https://github.com/juntaosun/LangSegment)
+### WebUI Tools
+- [FFmpeg](https://github.com/FFmpeg/FFmpeg)
+- [gradio](https://github.com/gradio-app/gradio))
+  
+## Thanks to all contributors for their efforts
+
+
 ---
 ## Star History
 
