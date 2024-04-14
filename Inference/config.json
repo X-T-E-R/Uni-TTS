@@ -1,0 +1,21 @@
+{
+    "locale": "auto",
+    "models_path": "trained",
+    "tts_port": 5000,
+    "tts_host": "0.0.0.0",
+    "half_precision": "auto",
+    "device": "auto",
+    "batch_size": 10,
+    "max_word_count": 100,
+    "max_text_length": -1,
+    "is_share": "false",
+    "save_prompt_cache": "true",
+    "备注0": "locale是语言环境，auto表示自动选择，如果你想要强制指定语言环境，可以填写zh_CN或者en_US等等",
+    "备注1": "路径可以填写绝对路径或者相对路径，相对路径指的是在主项目根目录的相对路径",
+    "备注2": "tts_port是tts服务的端口号，可以自己定义，只要不和其他服务的端口号冲突就行,默认是5000",
+    "备注3": "half-precision可以填写true或者false，auto表示自动选择，有一些显卡不支持half-precision，就把它设置为false",
+    "备注4": "device可以填写cpu或者cuda，auto表示自动选择，如果你的显卡不支持cuda，就把它设置为cpu，一般不用动",
+    "备注5": "batch_size是tts服务的批处理大小，越大越快，但可能出问题，默认是10",
+    "备注6": "max_text_length仅是app.py输入框的最大限制文本长度，-1表示不限制",
+    "备注7": "share代表是否分享你的前端为一个共享gradio，就可以分享链接给你的朋友了，默认为false"
+}
