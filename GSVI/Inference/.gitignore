@@ -1,0 +1,10 @@
+PortableGit/
+*.pyc
+trained/
+.vscode/launch.json
+src/try_phones.py
+text/
+src/oriapi.py
+src/tts_backend_fastAPI.py
+src/src.zip
+src/tmp/
