@@ -1,5 +1,6 @@
 # 在开头加入路径
 import os, sys
+import importlib
 
 # 尝试清空含有GPT_SoVITS的路径
 for path in sys.path:
@@ -11,8 +12,9 @@ sys.path.append(now_dir)
 # sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from src.config_manager import __version__ as backend_version
-print(f"Backend version: {backend_version}")
+__version__ = "0.1.0"
+
+print(f"Backend Version: {__version__}")
 
 import soundfile as sf
 from fastapi import FastAPI, Request, HTTPException
@@ -24,11 +26,20 @@ import json
 
 # 将当前文件所在的目录添加到 sys.path
 
-from src.config_manager import inference_config
+from src.api_config_manager import api_config
+from Adapters.base import Base_TTS_Task, Base_TTS_Instance
 
-from Adapters.gsv_fast import GSV_Instance as TTS_instance
-from Adapters.basic.Basic_TTS_Task import Basic_TTS_Task
-tts_instance = TTS_instance()
+enabled_adapters = api_config.enabled_adapters
+default_adapter = api_config.default_adapter
+
+if len(enabled_adapters) > 1:
+    tts_instance_dict:dict[str, Base_TTS_Instance] = {}
+    for adapter in enabled_adapters:
+        module = importlib.import_module(f"Adapters.{adapter}")
+        tts_instance_dict[adapter] = getattr(module, "TTS_Instance")()
+else:
+    module = importlib.import_module(f"Adapters.{default_adapter}")
+    tts_instance:Base_TTS_Instance = getattr(module, "TTS_Instance")()
 
 # 存储临时文件的字典
 temp_files = {}
@@ -45,12 +56,18 @@ app.add_middleware(
 )
 
 @app.get('/character_list')
-async def character_list():
+async def character_list(request: Request):
+    if len(enabled_adapters) > 1:
+        adapter = request.query_params.get("adapter", default_adapter)
+        tts_instance = tts_instance_dict[adapter]
     res = JSONResponse(tts_instance.get_characters())
     return res
 
 @app.get('/voice/speakers')
-async def speakers():
+async def speakers(request: Request):
+    if len(enabled_adapters) > 1:
+        adapter = request.query_params.get("adapter", default_adapter)
+        tts_instance = tts_instance_dict[adapter]
     speaker_dict = tts_instance.get_characters()
     name_list = list(speaker_dict.keys())
     speaker_list = [{"id": i, "name": name_list[i], "lang":["zh","en","ja"]} for i in range(len(name_list))]
@@ -61,7 +78,7 @@ async def speakers():
     }
     return JSONResponse(res)     
 
-def generate_task(task: Basic_TTS_Task , adapter: str="gsv_fast"):
+def generate_task(task: Base_TTS_Task):
     if task.task_type == "text" and task.text.strip() == "":
         return HTTPException(status_code=400, detail="Text is empty")
     elif task.task_type == "ssml" and task.ssml.strip() == "":
@@ -111,7 +128,10 @@ def generate_task(task: Basic_TTS_Task , adapter: str="gsv_fast"):
 
 
 # route 由 json 文件配置
-async def tts(request: Request, adapter: str = "gsv_fast"):
+async def tts(request: Request):
+    if len(enabled_adapters) > 1:
+        adapter = request.query_params.get("adapter", default_adapter)
+        tts_instance = tts_instance_dict[adapter]
     # 尝试从JSON中获取数据，如果不是JSON，则从查询参数中获取
     if request.method == "GET":
         data = request.query_params
@@ -127,10 +147,10 @@ async def tts(request: Request, adapter: str = "gsv_fast"):
     
     print(task)
     if return_type == "audio":
-        return generate_task(task, adapter)
+        return generate_task(task)
     else:
         # TODO: return json
-        return generate_task(task, adapter)
+        return generate_task(task)
         pass
 
 routes = ['/tts']
@@ -161,10 +181,8 @@ def print_ipv4_ip(host = "127.0.0.1", port = 5000):
         if display_hostname != "127.0.0.1":
             print(f"Please use http://{display_hostname}:{port} to access the service.")
 
-
-workers = inference_config.workers
-tts_host = inference_config.tts_host
-tts_port = inference_config.tts_port
+tts_host = api_config.tts_host
+tts_port = api_config.tts_port
 
 if __name__ == "__main__":
     print_ipv4_ip(tts_host, tts_port)

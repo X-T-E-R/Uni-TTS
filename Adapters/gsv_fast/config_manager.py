@@ -11,15 +11,61 @@ logging.getLogger("httpx").setLevel(logging.ERROR)
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logging.getLogger("charset_normalizer").setLevel(logging.ERROR)
 logging.getLogger("torchaudio._extension").setLevel(logging.ERROR)
+def test_fp16_computation():
+    # 检查CUDA是否可用
+    if not torch.cuda.is_available():
+        return False, "CUDA is not available. Please check your installation."
+
+    try:
+        # 创建一个简单的半精度张量计算任务
+        # 例如，执行一个半精度的矩阵乘法
+        a = torch.randn(3, 3, dtype=torch.float16).cuda()  # 将张量a转换为半精度并移动到GPU
+        b = torch.randn(3, 3, dtype=torch.float16).cuda()  # 将张量b转换为半精度并移动到GPU
+        c = torch.matmul(a, b)  # 执行半精度的矩阵乘法
+        # 如果没有发生错误，我们认为GPU支持半精度运算
+        return True, "Your GPU supports FP16 computation."
+    except Exception as e:
+        # 如果执行过程中发生异常，我们认为GPU不支持半精度运算
+        return False, f"Your GPU does not support FP16 computation. Error: {e}"
+
+
+def get_device_info(device_config="auto", is_half_config="auto"):
+    global device, is_half
+    try:
+        return device, is_half
+    except:
+        if torch.cuda.is_available():
+            device = "cuda"
+            is_half = True
+        else:
+            device = "cpu"
+            is_half = False
+
+        if device_config != "auto":
+            device = device_config
+            is_half = (device == "cpu")
+        if is_half_config != "auto":
+            is_half = str(is_half_config).lower() == "true"
+
+        supports_fp16, message = test_fp16_computation()
+        if not supports_fp16 and is_half:
+            is_half = False
+            print(message)
+
+        return device, is_half
+
+
 
 class Inference_Config():
     def __init__(self):
-        self.config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+        self.config_path = os.path.join("configs/gsv_fast", "config.json")
         assert os.path.exists(self.config_path), f"配置文件不存在: {self.config_path}"
         if os.path.exists(self.config_path):
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 config:dict = json.load(f)
-                self.workers = config.get("workers", 10)
+                
+                self.device, self.is_half = get_device_info(config.get("device", "auto"), config.get("is_half", "auto"))
+                
                 self.models_path = config.get("models_path", "models/gsv")
                 self.tts_host = config.get("tts_host", "0.0.0.0")
                 self.tts_port = config.get("tts_port", 5000)
@@ -30,7 +76,7 @@ class Inference_Config():
                 self.is_share = config.get("is_share", "false").lower() == "true"
                 self.max_text_length = config.get("max_text_length", -1)
                 self.disabled_features = config.get("disabled_features", [])
-                self.allowed_adapters = config.get("allowed_adapters", ["gsv_fast", "gsv_classic", "azure"])
+                
                 self.save_model_cache = config.get("save_model_cache", "false").lower() == "true"
                 self.save_prompt_cache = config.get("save_prompt_cache", "false").lower() == "true"
                 locale_language = str(config.get("locale", "auto"))
@@ -145,55 +191,6 @@ def update_character_info(models_path:str=None):
             characters_and_emotions[character_subdir] = ["default"]
 
     return {"deflaut_character": default_character, "characters_and_emotions": characters_and_emotions}
-
-def test_fp16_computation():
-    # 检查CUDA是否可用
-    if not torch.cuda.is_available():
-        return False, "CUDA is not available. Please check your installation."
-
-    try:
-        # 创建一个简单的半精度张量计算任务
-        # 例如，执行一个半精度的矩阵乘法
-        a = torch.randn(3, 3, dtype=torch.float16).cuda()  # 将张量a转换为半精度并移动到GPU
-        b = torch.randn(3, 3, dtype=torch.float16).cuda()  # 将张量b转换为半精度并移动到GPU
-        c = torch.matmul(a, b)  # 执行半精度的矩阵乘法
-        # 如果没有发生错误，我们认为GPU支持半精度运算
-        return True, "Your GPU supports FP16 computation."
-    except Exception as e:
-        # 如果执行过程中发生异常，我们认为GPU不支持半精度运算
-        return False, f"Your GPU does not support FP16 computation. Error: {e}"
-
-
-def get_device_info():
-    global device, is_half
-    try:
-        return device, is_half
-    except:
-        if torch.cuda.is_available():
-            device = "cuda"
-            is_half = True
-        else:
-            device = "cpu"
-            is_half = False
-
-        # 取得模型文件夹路径
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-
-        if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as f:
-                _config = json.load(f)
-                if _config.get("device", "auto") != "auto":
-                    device = _config["device"]
-                    is_half = (device == "cpu")
-                if _config.get("half_precision", "auto") != "auto":
-                    is_half = _config["half_precision"].lower() == "true"
-
-        supports_fp16, message = test_fp16_computation()
-        if not supports_fp16 and is_half:
-            is_half = False
-            print(message)
-
-        return device, is_half
 
 
 

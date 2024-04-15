@@ -8,7 +8,7 @@ def load_language_list(language, locale_path="./i18n/locale"):
         language_list = json.load(f)
     return language_list
 
-from src.config_manager import inference_config
+from Adapters.gsv_fast.config_manager import inference_config
 
 class I18nAuto:
     def __init__(self, language=None, locale_path="./i18n/locale"):

@@ -10,16 +10,16 @@ import hashlib
 
 def get_params_config():
     try:
-        with open(os.path.join(os.path.dirname(__file__), "params_config.json"), "r", encoding="utf-8") as f:
+        with open(os.path.join("configs/gsv_fast", "params_config.json"), "r", encoding="utf-8") as f:
             return json.load(f)
     except:
         raise FileNotFoundError("params_config.json not found.")
     
 params_config = get_params_config()
 
-from Adapters.basic import Basic_TTS_Task
+from Adapters.base import Base_TTS_Task
 
-class GSV_TTS_Task(Basic_TTS_Task):
+class GSV_TTS_Task(Base_TTS_Task):
     
     def __init__(self, other_task=None):
         super().__init__(other_task)

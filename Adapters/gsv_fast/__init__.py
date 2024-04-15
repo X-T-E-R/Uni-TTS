@@ -1,1 +1,1 @@
-from .gsv_adapter import GSV_Instance
+from .gsv_adapter import GSV_Instance as TTS_Instance

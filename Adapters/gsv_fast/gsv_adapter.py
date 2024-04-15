@@ -2,6 +2,8 @@ import io, wave
 import os, json, sys
 import threading
 
+from Adapters.base import Base_TTS_Instance 
+
 from .gsv_task import GSV_TTS_Task as TTS_Task
 from .ssml_dealer import SSML_Dealer
 
@@ -11,7 +13,7 @@ import hashlib
 
 sys.path.append(".")
 
-from src.config_manager import load_infer_config, auto_generate_infer_config, inference_config, get_device_info, update_character_info
+from .config_manager import load_infer_config, auto_generate_infer_config, inference_config, get_device_info, update_character_info
 disabled_features = inference_config.disabled_features
 
 dict_language = {
@@ -46,7 +48,7 @@ def get_deflaut_character_name(models_path:str=None):
 
         return default_character
 
-class GSV_Instance:
+class GSV_Instance(Base_TTS_Instance):
     def __init__(self, models_path=None, default_character=None, **kwargs):
         self.save_prompt_cache = inference_config.save_prompt_cache
         self.save_model_cache = inference_config.save_model_cache

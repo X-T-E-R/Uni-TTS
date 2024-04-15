@@ -1,0 +1,6 @@
+{
+  "locale": "auto",
+  "tts_port": 5000,
+  "tts_host": "0.0.0.0",
+  "enabled_adapters": ["gsv_fast"]
+}

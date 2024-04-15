@@ -7,7 +7,7 @@ import urllib.parse
 import hashlib
 
 
-class Basic_TTS_Task:
+class Base_TTS_Task:
     """
     Represents a basic Text-to-Speech (TTS) task.
 

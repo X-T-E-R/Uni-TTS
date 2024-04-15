@@ -14,8 +14,8 @@ sys.path.append(now_dir)
 
 
 # 读取config.json
-from src.config_manager import Inference_Config
-from src.config_manager import __version__ as frontend_version
+from Adapters.gsv_fast.config_manager import Inference_Config
+from Adapters.gsv_fast.config_manager import __version__ as frontend_version
 inference_config = Inference_Config()
 
 config_path = inference_config.config_path
