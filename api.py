@@ -11,7 +11,7 @@ sys.path.append(now_dir)
 # sys.path.append(os.path.join(now_dir, "GPT_SoVITS"))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from Inference.src.config_manager import __version__ as backend_version
+from src.config_manager import __version__ as backend_version
 print(f"Backend version: {backend_version}")
 
 import soundfile as sf
@@ -24,18 +24,10 @@ import json
 
 # 将当前文件所在的目录添加到 sys.path
 
-from Inference.src.TTS_Task import TTS_Task
-from Inference.src.data_analyser import params_analyser, ms_like_analyser
-from Inference.src.config_manager import update_character_info, inference_config
+from src.config_manager import inference_config
 
-try:
-    from GPT_SoVITS.TTS_infer_pack.text_segmentation_method import register_method
-except ImportError:
-    is_classic = True
-    raise ImportError("GPT_SoVITS is not installed, please use GSVI")
-    pass
-
-from Inference.src.TTS_Instance import TTS_instance
+from Adapters.gsv_fast import GSV_Instance as TTS_instance
+from Adapters.basic.Basic_TTS_Task import Basic_TTS_Task
 tts_instance = TTS_instance()
 
 # 存储临时文件的字典
@@ -54,12 +46,12 @@ app.add_middleware(
 
 @app.get('/character_list')
 async def character_list():
-    res = JSONResponse(update_character_info()['characters_and_emotions'])
+    res = JSONResponse(tts_instance.get_characters())
     return res
 
 @app.get('/voice/speakers')
 async def speakers():
-    speaker_dict = update_character_info()['characters_and_emotions']
+    speaker_dict = tts_instance.get_characters()
     name_list = list(speaker_dict.keys())
     speaker_list = [{"id": i, "name": name_list[i], "lang":["zh","en","ja"]} for i in range(len(name_list))]
     res = {
@@ -69,8 +61,7 @@ async def speakers():
     }
     return JSONResponse(res)     
 
-def generate_task(task: TTS_Task, adapter: str="gsv_fast"):
-
+def generate_task(task: Basic_TTS_Task , adapter: str="gsv_fast"):
     if task.task_type == "text" and task.text.strip() == "":
         return HTTPException(status_code=400, detail="Text is empty")
     elif task.task_type == "ssml" and task.ssml.strip() == "":
@@ -90,6 +81,7 @@ def generate_task(task: TTS_Task, adapter: str="gsv_fast"):
         return FileResponse(audio_path, media_type=f"audio/{format}", filename=f"audio.{format}")
 
     if stream == False:
+        # TODO: use SQL instead of dict
         if save_temp and request_hash in temp_files:
             return FileResponse(path=temp_files[request_hash], media_type=f'audio/{format}')
         else:
@@ -128,11 +120,12 @@ async def tts(request: Request, adapter: str = "gsv_fast"):
     return_type = "audio"
     # 认定一个请求只有一个任务
     if data.get("textType", None) is not None:
-        task : TTS_Task = ms_like_analyser(data)
+        task = tts_instance.ms_like_analyser(data)
         return_type = "json"
     else:
-        task : TTS_Task = params_analyser(data)
-        
+        task = tts_instance.params_analyser(data)
+    
+    print(task)
     if return_type == "audio":
         return generate_task(task, adapter)
     else:
@@ -141,12 +134,6 @@ async def tts(request: Request, adapter: str = "gsv_fast"):
         pass
 
 routes = ['/tts']
-try:
-    with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "params_config.json"), "r", encoding="utf-8") as f:
-        config = json.load(f)
-        routes = config.get("route", {}).get("alias", ['/tts'])
-except:
-    pass
 
 # 注册路由
 for path in routes:

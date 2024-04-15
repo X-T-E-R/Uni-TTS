@@ -11,7 +11,7 @@ sys.path.append(now_dir)
 
 global state
 
-state = {   'models_path': r"trained",
+state = {   'models_path': r"models/gsv",
             'character_list': [],
             
 
@@ -34,12 +34,12 @@ config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.j
 if os.path.exists(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
-        state["models_path"] = config.get("models_path", "trained")
+        state["models_path"] = config.get("models_path", "models/gsv")
         locale_language = str(config.get("locale", "auto"))
         locale_language = None if locale_language.lower() == "auto" else locale_language
         
 from tools.i18n.i18n import I18nAuto
-from Inference.src.config_manager import inference_config
+from src.config_manager import inference_config
 
 i18n = I18nAuto(locale_language ,os.path.join(os.path.dirname(os.path.dirname(__file__)), "i18n/locale"))
 

@@ -15,12 +15,12 @@ logging.getLogger("torchaudio._extension").setLevel(logging.ERROR)
 class Inference_Config():
     def __init__(self):
         self.config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-        self.models_path = "trained"
+        assert os.path.exists(self.config_path), f"配置文件不存在: {self.config_path}"
         if os.path.exists(self.config_path):
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 config:dict = json.load(f)
                 self.workers = config.get("workers", 10)
-                self.models_path = config.get("models_path", "trained")
+                self.models_path = config.get("models_path", "models/gsv")
                 self.tts_host = config.get("tts_host", "0.0.0.0")
                 self.tts_port = config.get("tts_port", 5000)
                 self.default_batch_size = config.get("batch_size", 1)
@@ -31,6 +31,7 @@ class Inference_Config():
                 self.max_text_length = config.get("max_text_length", -1)
                 self.disabled_features = config.get("disabled_features", [])
                 self.allowed_adapters = config.get("allowed_adapters", ["gsv_fast", "gsv_classic", "azure"])
+                self.save_model_cache = config.get("save_model_cache", "false").lower() == "true"
                 self.save_prompt_cache = config.get("save_prompt_cache", "false").lower() == "true"
                 locale_language = str(config.get("locale", "auto"))
                 self.locale_language = None if locale_language.lower() == "auto" else locale_language
@@ -195,33 +196,6 @@ def get_device_info():
         return device, is_half
 
 
-def get_params_config():
-    try:
-        with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "params_config.json"), "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        raise FileNotFoundError("params_config.json not found.")
-    
-    
-global params_config
-params_config = get_params_config()
-
-def get_deflaut_character_name(models_path:str=None):
-    global default_character
-    try:
-        return default_character
-    except:
-        
-        default_character = params_config["character"]["default"]
-
-        if default_character in ["", None, "default"]:
-            default_character=None
-            
-        if default_character is None:
-            characters_and_emotions = update_character_info(models_path)["characters_and_emotions"]
-            default_character = list(characters_and_emotions.keys())[0]
-
-        return default_character
 
 def remove_character_path(full_path,character_path):
     # 从full_path中移除character_path部分

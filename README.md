@@ -61,14 +61,14 @@ For API documentation, visit our [Yuque documentation page](https://www.yuque.co
 
 ## Model Folder Format
 
-In a character model folder, like `trained/Character1/`
+In a character model folder, like `models/gsv/Character1/`
 
 Put the pth / ckpt / wav files in it, the wav should be named as the prompt text
 
 Like :
 
 ```
-trained
+models/gsv
 --hutao
 ----hutao-e75.ckpt
 ----hutao_e60_s3360.pth
@@ -83,9 +83,9 @@ It can assign a reference audio to each emotion, aiming to achieve the implement
 
 ## Installation
 
-You could install this with the guide bellow, then download pretrained models from [GPT-SoVITS Models](https://huggingface.co/lj1995/GPT-SoVITS) and place them in `GPT_SoVITS/pretrained_models`, and put your character model folder in `trained`
+You could install this with the guide bellow, then download pretrained models from [GPT-SoVITS Models](https://huggingface.co/lj1995/GPT-SoVITS) and place them in `models/pretrained_models/gsv`, and put your character model folder in `models/gsv`
 
-Or just download the pre-packaged distribution for Windows. ( then put your character model folder in `trained` )
+Or just download the pre-packaged distribution for Windows. ( then put your character model folder in `models/gsv` )
 
 About the character model folder, see below
 
@@ -113,7 +113,7 @@ bash install.sh
 
 ### macOS
 
-**Note: The models trained with GPUs on Macs result in significantly lower quality compared to those trained on other devices, so we are temporarily using CPUs instead.**
+**Note: The models models/gsv with GPUs on Macs result in significantly lower quality compared to those models/gsv on other devices, so we are temporarily using CPUs instead.**
 
 First make sure you have installed FFmpeg by running `brew install ffmpeg` or `conda install ffmpeg`, then install by using the following commands:
 
@@ -148,7 +148,7 @@ Download and place [ffmpeg.exe](https://huggingface.co/lj1995/VoiceConversionWeb
 
 ### Pretrained Models ( No need if use prezip )
 
-Download pretrained models from [GPT-SoVITS Models](https://huggingface.co/lj1995/GPT-SoVITS) and place them in `GPT_SoVITS/pretrained_models`.
+Download pretrained models from [GPT-SoVITS Models](https://huggingface.co/lj1995/GPT-SoVITS) and place them in `models/pretrained_models/gsv`.
 
 
 ## Docker
