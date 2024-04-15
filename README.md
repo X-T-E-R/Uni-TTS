@@ -16,8 +16,9 @@
 
 ## Credits
 
-### 整段引用的代码：
-1. 内部的 `Adapters/gsv_fast` 文件夹、`i18n`来自[GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS)项目的`fast_inference_`分支
+### 整段使用的代码：
+1. 内部的 `Adapters/gsv_fast` 文件夹主要来自[GPT-soVITS](https://github.com/RVC-Boss/GPT-SoVITS)项目的`fast_inference_`分支
+2. `tools/i18n` 魔改自 [GSVI](https://github.com/X-T-E-R/GPT-SoVITS-Inference) ，基于 [i18n](https://github.com/RVC-Boss/GPT-SoVITS/tree/main/tools/i18n)
 
 ### 感谢所有有关项目与贡献者
 
